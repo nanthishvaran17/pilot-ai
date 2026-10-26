@@ -1,0 +1,314 @@
+{
+  "project_id": "0f2c295f-e3cf-4416-a50e-5e9d72afbf18",
+  "project_name": "Automated Test Project",
+  "version": 1,
+  "created_at": "2026-10-26T17:17:14.004261",
+  "blueprint": {
+    "executive_summary": "Automated Test Project is designed as an intelligent, automated digital platform specifically tailored to solve manual workflow friction for Internal Staff & Academic Faculty. The platform centralizes data operations, eliminates redundant paperwork, and enforces data accuracy and compliance with sub-second responsiveness.",
+    "problem_statement": "Currently, stakeholders rely on disjointed spreadsheets, manual data compilation, and error-prone physical paperwork. This leads to operational bottlenecks, delayed reports, and an estimated 10-15 wasted hours per staff member every week.",
+    "project_goals": [
+      "Automate end-to-end data processing for Automated Test Project",
+      "Enable high-velocity document export in compliant PDF, Word, and Excel formats",
+      "Provide auditable, role-based security ensuring sensitive student and organizational records remain protected",
+      "Reduce report compilation latency from days to under 10 seconds"
+    ],
+    "target_users": [
+      {
+        "role": "Admin",
+        "persona": "Operational user operating under Admin privileges",
+        "primary_needs": "Execute assigned duties, view dashboards, and export verified records without technical friction."
+      },
+      {
+        "role": "Staff",
+        "persona": "Operational user operating under Staff privileges",
+        "primary_needs": "Execute assigned duties, view dashboards, and export verified records without technical friction."
+      },
+      {
+        "role": "Student",
+        "persona": "Operational user operating under Student privileges",
+        "primary_needs": "Execute assigned duties, view dashboards, and export verified records without technical friction."
+      }
+    ],
+    "confirmed_functional_requirements": [
+      {
+        "title": "Role-Based Authentication & Session Management",
+        "description": "Secure sign-in with JWT, password hashing, and authorization guards.",
+        "category": "Security",
+        "priority": "Must Have",
+        "is_mvp": true
+      },
+      {
+        "title": "Automated Document Rendering Engine",
+        "description": "Generate print-ready PDFs and editable Word documents with standardized academic templates.",
+        "category": "Functional",
+        "priority": "Must Have",
+        "is_mvp": true
+      },
+      {
+        "title": "Spreadsheet Ingestion & Validation Pipeline",
+        "description": "Parse Excel/CSV uploads with instant cell-level validation and mismatch alerts.",
+        "category": "Data Management",
+        "priority": "Must Have",
+        "is_mvp": true
+      },
+      {
+        "title": "Interactive Analytics & Insights Dashboard",
+        "description": "Real-time key performance indicators, pass rates, and trend visualization.",
+        "category": "Reporting",
+        "priority": "Should Have",
+        "is_mvp": false
+      }
+    ],
+    "user_roles_and_permissions": [
+      {
+        "role": "Administrator",
+        "scope": "Full System Access",
+        "permissions": "Manage users, configure academic templates, view audit logs, wipe/restore data"
+      },
+      {
+        "role": "Staff / Faculty",
+        "scope": "Department Operations",
+        "permissions": "Upload marks, generate question papers, issue certificates, export reports"
+      },
+      {
+        "role": "Student / Public Member",
+        "scope": "Self-Service",
+        "permissions": "View personal grades, download validated certificates, verify QR codes"
+      }
+    ],
+    "page_by_page_ui_plan": [
+      {
+        "page": "Login & Onboarding",
+        "route": "/login",
+        "components": "Email/password form, SSO button, Password recovery, Role preview"
+      },
+      {
+        "page": "Executive Dashboard",
+        "route": "/dashboard",
+        "components": "Recent activities, quick action launchpad, system status cards, pending approvals"
+      },
+      {
+        "page": "Document & Academic Workspace",
+        "route": "/workspace",
+        "components": "File upload dropzone, live template previewer, export toolbar (PDF/DOCX/Excel)"
+      },
+      {
+        "page": "Analytics & Results Center",
+        "route": "/analytics",
+        "components": "Interactive charts, pass percentage distribution, arrear identification table"
+      },
+      {
+        "page": "Administration & Settings",
+        "route": "/admin",
+        "components": "User role management, question templates editor, security & audit trail viewer"
+      }
+    ],
+    "detailed_user_journeys": [
+      {
+        "journey": "Staff Marks Import & Analysis Flow",
+        "steps": [
+          "Staff signs into the portal using college credentials",
+          "Navigates to Results Analysis module and uploads departmental marks spreadsheet (.xlsx)",
+          "Engine parses rows, validates student register numbers, and computes averages and pass percentages",
+          "Staff reviews visual distribution chart, flags borderline scores, and clicks 'Generate Report'",
+          "Backend renders validated PDF and Excel reports with institutional headers"
+        ]
+      },
+      {
+        "journey": "Event Certificate Generation & QR Verification Flow",
+        "steps": [
+          "Coordinator creates event and uploads participant attendance roster",
+          "Selects approved certificate template and verifies signature metadata",
+          "Clicks 'Bulk Generate Certificates' -> backend renders unique PDFs with cryptographically signed QR codes",
+          "Participants download their PDF certificate",
+          "Third-party verifier scans the QR code and is directed to the public verification endpoint showing official validation"
+        ]
+      }
+    ],
+    "workflow_diagrams_mermaid": "flowchart TD\n    A[User Ingestion / File Upload] --> B{Validation & Schema Check}\n    B -- Valid --> C[Database Transaction / State Store]\n    B -- Errors Found --> D[Return Inline Validation Errors]\n    C --> E[Processing Engine: Calculations / AI Enrichment]\n    E --> F[Document Renderer: PDF / Word / Excel]\n    F --> G[Secure Storage & Signed Download URL]\n    G --> H[Audit Log Recorded & Notification Dispatched]",
+    "automation_rules": [
+      {
+        "rule_name": "Spreadsheet Validation Auto-Guard",
+        "trigger": "On Excel file upload",
+        "action": "Validate column names against schema; reject invalid rows before db write"
+      },
+      {
+        "rule_name": "Audit Logging",
+        "trigger": "On any create, update, or export event",
+        "action": "Write user ID, timestamp, IP, and resource hash to immutable audit log"
+      },
+      {
+        "rule_name": "Auto-Save Debounce",
+        "trigger": "On form field blur or 500ms idle",
+        "action": "Persist incremental state to database with timestamp"
+      }
+    ],
+    "database_entities_and_relationships": {
+      "Users": [
+        "id (PK, UUID)",
+        "email (Unique)",
+        "hashed_password",
+        "role",
+        "is_active",
+        "created_at"
+      ],
+      "Projects": [
+        "id (PK, UUID)",
+        "user_id (FK)",
+        "template_id (FK)",
+        "name",
+        "status",
+        "completeness_score",
+        "created_at"
+      ],
+      "Responses": [
+        "id (PK, UUID)",
+        "project_id (FK)",
+        "question_key",
+        "value (JSON)",
+        "is_confirmed",
+        "updated_at"
+      ],
+      "Requirements": [
+        "id (PK, UUID)",
+        "project_id (FK)",
+        "title",
+        "moscow_priority",
+        "is_mvp",
+        "source"
+      ],
+      "ExportJobs": [
+        "id (PK, UUID)",
+        "project_id (FK)",
+        "export_format",
+        "file_path",
+        "status",
+        "created_at"
+      ]
+    },
+    "database_er_mermaid": "erDiagram\n    USERS ||--o{ PROJECTS : owns\n    PROJECTS ||--o{ RESPONSES : contains\n    PROJECTS ||--o{ REQUIREMENTS : defines\n    PROJECTS ||--o{ EXPORT_JOBS : triggers\n    PROJECTS ||--o{ BLUEPRINTS : generates\n    USERS ||--o{ AUDIT_LOGS : performs",
+    "api_requirements": [
+      {
+        "endpoint": "POST /api/v1/auth/login",
+        "purpose": "Authenticate user and issue JWT bearer token"
+      },
+      {
+        "endpoint": "GET /api/v1/projects",
+        "purpose": "List user projects with status and completion percentage"
+      },
+      {
+        "endpoint": "POST /api/v1/projects",
+        "purpose": "Create new project draft with template binding"
+      },
+      {
+        "endpoint": "POST /api/v1/questions/autosave",
+        "purpose": "Debounced incremental response auto-save"
+      },
+      {
+        "endpoint": "POST /api/v1/blueprint/generate",
+        "purpose": "Synthesize 23-point specification and render blueprint"
+      },
+      {
+        "endpoint": "POST /api/v1/blueprint/export",
+        "purpose": "Generate real binary export (PDF, Word, CSV, Markdown, JSON)"
+      }
+    ],
+    "ai_architecture": {
+      "provider_strategy": "Hybrid Local / Fallback-Resilient Engine",
+      "deterministic_boundary": "Critical business logic, marks calculations, and database mutations are 100% deterministic code.",
+      "generative_boundary": "Question formulation, Bloom's taxonomy suggestions, and natural-language summaries leverage LLMs with strict JSON schema validation.",
+      "fallback_mechanism": "If external AI API is unreachable, system gracefully falls back to deterministic template rules without interrupting user workflows."
+    },
+    "security_requirements": [
+      "Password hashing using industry-standard bcrypt with salt",
+      "JWT tokens signed with HS256 and configurable expiration",
+      "Server-side authorization guards preventing unauthorized tenant access",
+      "Sanitization of all incoming filenames and uploaded document streams",
+      "Audit trail tracking all export and project administrative operations"
+    ],
+    "integration_requirements": [
+      "RESTful JSON API with OpenAPI (Swagger) documentation",
+      "Standard MIME-type file streaming for PDF, Word, and Excel downloads",
+      "Pluggable LLM endpoints (OpenAI / Gemini / Anthropic / Local Ollama)"
+    ],
+    "validation_rules": [
+      {
+        "target": "User Input Strings",
+        "rule": "Strip control characters, enforce max lengths, escape HTML entities"
+      },
+      {
+        "target": "Spreadsheet Uploads",
+        "rule": "Verify file extension (.xlsx, .csv), check magic bytes, enforce max file size of 25MB"
+      },
+      {
+        "target": "Questionnaire Responses",
+        "rule": "Enforce type constraints (e.g. integer for numeric questions, list for multi-select)"
+      }
+    ],
+    "error_handling_strategy": [
+      "Unified HTTP exception handler with standardized error JSON schemas",
+      "Safe database rollback on transaction failure",
+      "Graceful UI toast notifications for network timeouts or validation alerts"
+    ],
+    "testing_strategy": [
+      {
+        "tier": "Unit Tests",
+        "scope": "Engine rules, condition evaluation, contradiction detection, password hashing"
+      },
+      {
+        "tier": "Integration Tests",
+        "scope": "FastAPI endpoints, project CRUD, response autosave, blueprint generation"
+      },
+      {
+        "tier": "Export Validation Tests",
+        "scope": "Verifying PDF, DOCX, CSV, and JSON generators create valid binary files on disk"
+      },
+      {
+        "tier": "E2E Browser Tests",
+        "scope": "Full user walkthrough from idea creation to blueprint export"
+      }
+    ],
+    "mvp_scope": [
+      "Project creation with natural-language idea extraction",
+      "Adaptive conditional questionnaire with live auto-save",
+      "Contradiction detection and missing requirement alerts",
+      "Interactive MoSCoW prioritization dashboard",
+      "Full 23-point Blueprint generator",
+      "Real backend file exports (PDF, DOCX, Markdown, JSON, CSV)"
+    ],
+    "future_development_phases": [
+      {
+        "phase": "Phase 2",
+        "title": "Multi-Tenant Cloud Sync & Realtime Collaboration",
+        "scope": "WebSockets for concurrent multi-user editing and institutional SSO integrations."
+      },
+      {
+        "phase": "Phase 3",
+        "title": "Automated Code Scaffolding",
+        "scope": "One-click export of starter codebases (FastAPI backend + React frontend) directly from the generated blueprint."
+      }
+    ],
+    "acceptance_criteria": [
+      "User can input a project idea in English or Tamil-English transliteration and have it auto-structured",
+      "Questions adapt in real time to previous selections without page reloads",
+      "Irrelevant questions are automatically omitted from the active flow",
+      "Auto-save preserves every answer with visual confirmation",
+      "Clicking export generates real downloadable PDF, DOCX, Markdown, JSON, and CSV files",
+      "The entire platform runs responsively across mobile and desktop viewports"
+    ],
+    "unresolved_decisions": [
+      {
+        "topic": "Production Cloud Host",
+        "impact": "Medium",
+        "status": "Pending Cloud Budget Approval"
+      }
+    ],
+    "assumptions_requiring_approval": [
+      {
+        "statement": "The client institution has existing email infrastructure for automated notifications.",
+        "category": "Infrastructure",
+        "status": "pending_review"
+      }
+    ]
+  }
+}

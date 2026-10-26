@@ -1,0 +1,739 @@
+# MASTER BUILD PROMPT: AI-POWERED SMART PROJECT REQUIREMENTS & PLANNING PLATFORM
+
+## 1. ROLE AND OBJECTIVE
+
+Act as a world-class product architect, senior full-stack engineer, UX researcher, UI/UX designer, AI workflow engineer, database architect, security engineer, and QA automation specialist.
+
+Design and implement a production-oriented, premium web application that collects project requirements through a highly intelligent, dynamic, personalized form experience.
+
+The application must not look or behave like a traditional Google Form, generic survey, or boring multi-page questionnaire.
+
+Build a polished, responsive, intelligent requirements-gathering platform that adapts to each user's answers, asks only relevant questions, remembers progress, prevents unnecessary repetition, and generates a complete, structured project specification from the user's responses.
+
+Working product name: **ProjectPilot AI**.
+
+The product name must be configurable.
+
+Primary objective:
+Help a user transform an initial idea into a clear, complete, actionable project blueprint through an easy, personalized, adaptive questionnaire.
+
+The platform must be usable by non-technical users while collecting enough technical information for developers to implement the project correctly.
+
+Do not merely create a landing page or static UI mockup. Implement the actual frontend, backend, database, form logic, validation, persistence, and project-report generation.
+
+---
+
+## 2. CORE PRODUCT PRINCIPLES
+
+Follow these principles throughout the application:
+
+1. Ask only questions that are relevant to the current user and their project.
+2. Never force users to answer every question.
+3. Use conditional logic to show or hide questions based on previous answers.
+4. Distinguish essential requirements from optional preferences.
+5. Allow users to skip, defer, or mark a requirement as undecided.
+6. Ask for clarification only when an answer is ambiguous or insufficient for the next step.
+7. Never repeatedly ask for information already provided.
+8. Support users who have no technical knowledge.
+9. Translate technical concepts into simple language with examples.
+10. Provide advanced technical options only when relevant.
+11. Save progress automatically and allow users to resume later.
+12. Never invent requirements or silently convert assumptions into confirmed decisions.
+13. Clearly label confirmed answers, inferred suggestions, unanswered questions, and unresolved decisions.
+14. Let users review, edit, and approve all generated requirements.
+15. Make the experience fast, accessible, mobile-friendly, and visually excellent.
+
+The system must optimize for completion, clarity, low cognitive load, and accurate requirement collection—not for the number of questions asked.
+
+---
+
+## 3. PREMIUM USER EXPERIENCE
+
+Create a sophisticated interface inspired by excellent modern SaaS products, enterprise onboarding flows, and conversational AI workspaces.
+
+Visual direction:
+- Clean, minimal, premium, professional.
+- Strong typography and excellent visual hierarchy.
+- Balanced spacing and readable content.
+- Refined neutral surfaces with a restrained accent color.
+- Subtle shadows, tasteful borders, and consistent corner radii.
+- Smooth, purposeful transitions.
+- No excessive gradients, glassmorphism, blur effects, decorative animations, or unnecessary cards.
+- Avoid clutter, excessive icons, oversized headings, and distracting colors.
+- Support light and dark themes.
+- Use consistent design tokens for colors, typography, spacing, borders, and components.
+
+The interface should feel like a premium professional product, not a college assignment or a basic form builder.
+
+### Responsive layout
+
+Desktop:
+- Compact sidebar or project navigation when useful.
+- Central questionnaire workspace.
+- Optional contextual help panel.
+- Clear progress indicator.
+- Responsive two-column layouts only when they improve usability.
+
+Mobile:
+- Single-column layout.
+- Large touch-friendly controls.
+- No horizontal overflow.
+- Sticky navigation only where helpful.
+- Save, back, next, and skip actions must remain accessible.
+
+Accessibility:
+- Semantic HTML.
+- Keyboard navigation.
+- Visible focus states.
+- Screen-reader labels.
+- Appropriate contrast.
+- Reduced-motion support.
+- Accessible error messages and form controls.
+
+---
+
+## 4. USER JOURNEY
+
+Implement the following end-to-end journey.
+
+### Step 1: Welcome and project creation
+
+Show a premium welcome screen with a concise explanation of the platform.
+
+Primary action: "Start Planning".
+
+Allow the user to:
+- Create a new project.
+- Resume an existing project.
+- View saved drafts.
+- Duplicate a previous project.
+- Rename or archive a project.
+
+Ask only the minimum information needed to begin:
+- Project name or working title.
+- What the user wants to accomplish.
+- Intended audience or users, if known.
+
+Allow the user to start with incomplete information.
+
+### Step 2: Understand the initial idea
+
+Provide a simple free-text field:
+
+"Describe what you want to build."
+
+Allow natural-language input in English or Tamil-English transliteration where practical.
+
+Provide optional example prompts.
+
+Use AI, when configured, to identify:
+- Project objective.
+- Target users.
+- Main problem.
+- Expected outcome.
+- Possible modules.
+- Known constraints.
+- Missing critical information.
+
+Do not force the user to manually repeat information already stated in the description.
+
+Present the extracted summary for confirmation.
+
+### Step 3: Build a personalized questionnaire
+
+Generate a project-specific question plan using the initial description and confirmed answers.
+
+Questions should be grouped into logical sections, such as:
+- Project goals.
+- Target users.
+- Core features.
+- User workflows.
+- User interface.
+- Automation.
+- AI capabilities.
+- Data and integrations.
+- Roles and permissions.
+- Security and privacy.
+- Reports and exports.
+- Deployment.
+- Testing.
+- Future expansion.
+
+Only include relevant sections.
+
+For example:
+- If the user does not need AI, do not force an AI configuration section.
+- If the project does not generate certificates, do not ask detailed certificate-design questions.
+- If the user selects a web application, ask web-related questions.
+- If the user also selects Android, ask mobile-specific questions.
+- If the user has no technical knowledge, use guided defaults and simple explanations.
+
+### Step 4: Adaptive questionnaire engine
+
+Implement a real rules-based conditional questionnaire.
+
+Each question must support:
+- Unique identifier.
+- Section identifier.
+- Display label.
+- Plain-language explanation.
+- Input type.
+- Required or optional status.
+- Default value, where appropriate.
+- Validation rules.
+- Conditional visibility.
+- Dependencies on previous answers.
+- Skip eligibility.
+- Help text.
+- Option to mark "Not sure yet".
+- Optional recommendation.
+- Answer persistence.
+
+Supported question types:
+- Single-choice radio group.
+- Multiple-choice checkboxes.
+- Dropdown.
+- Short text.
+- Long text.
+- Number.
+- Date.
+- File upload.
+- Yes/no.
+- Ranking.
+- Conditional follow-up.
+- Optional priority selection.
+
+Do not display all questions simultaneously.
+
+Ask a manageable number of questions per step. Prefer one focused question at a time when that improves clarity; use compact groups for closely related settings.
+
+Provide:
+- Back.
+- Continue.
+- Skip.
+- Save and exit.
+- Review answers.
+- Resume later.
+
+Do not make the user lose progress when navigating backward or changing an answer.
+
+### Step 5: Contextual intelligence
+
+Implement the following behaviors:
+
+A. Relevant follow-ups:
+Ask follow-up questions only when the preceding answer creates a meaningful need for clarification.
+
+B. Smart defaults:
+Offer sensible recommendations for common project types, while clearly identifying them as suggestions.
+
+C. Duplicate prevention:
+Do not ask the same question in different wording unless confirmation is genuinely necessary.
+
+D. Contradiction detection:
+Identify conflicting answers, explain the conflict in plain language, and let the user resolve it.
+
+E. Missing requirement detection:
+Identify important missing information before producing the final specification.
+
+F. Confidence and uncertainty:
+Distinguish user-confirmed requirements from AI-inferred possibilities.
+
+G. Adaptive complexity:
+Allow a beginner-friendly mode and an advanced technical mode.
+
+H. Optional depth:
+Provide "Basic", "More details", and "Advanced settings" where appropriate.
+
+I. Change propagation:
+If a user changes an earlier answer, recalculate dependent questions and derived requirements without deleting unrelated information.
+
+J. Transparent assumptions:
+List unresolved questions and assumptions rather than inventing answers.
+
+AI must never autonomously finalize sensitive, financial, security, or externally consequential decisions without explicit user approval.
+
+---
+
+## 5. QUESTION BANK AND PROJECT TEMPLATES
+
+Create a reusable, versioned question bank.
+
+Provide templates for:
+- Web applications.
+- Mobile applications.
+- AI applications.
+- College and education platforms.
+- Business management systems.
+- E-commerce platforms.
+- Automation tools.
+- Data analytics systems.
+- Internal enterprise tools.
+- Custom projects.
+
+Each template should define:
+- Relevant sections.
+- Core questions.
+- Optional questions.
+- Conditional rules.
+- Recommended defaults.
+- Output requirements.
+
+Allow administrators to create and edit templates without changing application source code.
+
+Store template versions so existing projects remain understandable when templates are updated.
+
+Templates must be starting points, not rigid questionnaires. Users must be able to add custom requirements.
+
+---
+
+## 6. PROJECT REQUIREMENTS COVERAGE
+
+For relevant project types, cover the following categories.
+
+### Business and product requirements
+- Problem statement.
+- Goals and expected outcomes.
+- Target audience.
+- Primary use cases.
+- Success criteria.
+- Existing alternatives.
+- Constraints.
+- Budget and timeline, if relevant.
+
+### Functional requirements
+- Features and modules.
+- User actions.
+- Inputs and outputs.
+- Workflow rules.
+- Error handling.
+- Search and filtering.
+- Import and export.
+- Notifications.
+- Approvals.
+- History and auditability.
+
+### UI and UX
+- Design preferences.
+- Branding.
+- Navigation.
+- Accessibility.
+- Responsive behavior.
+- Language support.
+- User onboarding.
+- Empty, loading, success, and error states.
+
+### Technical architecture
+- Frontend.
+- Backend.
+- Database.
+- Authentication.
+- File storage.
+- External integrations.
+- API requirements.
+- Background processing.
+- Deployment environment.
+
+Ask technical questions only when they matter. Offer recommended defaults to users who do not know the answer.
+
+### AI and automation
+- Tasks requiring AI.
+- Tasks requiring deterministic code.
+- Input formats.
+- Expected output formats.
+- Human review.
+- Validation.
+- Retry and failure handling.
+- Usage limits.
+- Privacy constraints.
+- Local versus hosted models, when relevant.
+
+### Data and reporting
+- Data sources.
+- File formats.
+- Data validation.
+- Calculations.
+- Charts and dashboards.
+- Report formats.
+- Retention and deletion.
+- Export permissions.
+
+### Security and administration
+- User roles.
+- Access permissions.
+- Sensitive information.
+- Authentication.
+- Audit logs.
+- Backups.
+- Data isolation.
+- Administrative controls.
+
+### Delivery and quality
+- MVP scope.
+- Later phases.
+- Testing.
+- Performance requirements.
+- Deployment.
+- Monitoring.
+- Maintenance.
+- Acceptance criteria.
+
+Do not force irrelevant categories into every project.
+
+---
+
+## 7. FEATURE PRIORITIZATION
+
+Let users prioritize requirements using:
+- Must have.
+- Should have.
+- Could have.
+- Future consideration.
+
+Allow users to indicate:
+- Importance.
+- Expected time savings.
+- Number of users affected.
+- Dependencies.
+- Implementation complexity, when known.
+
+Generate a suggested MVP based on user priorities and dependencies.
+
+Clearly distinguish:
+- User-selected priorities.
+- AI recommendations.
+- Developer estimates.
+- Confirmed delivery commitments.
+
+Do not present estimated development costs or timelines as guaranteed facts.
+
+---
+
+## 8. LIVE REQUIREMENTS SUMMARY
+
+Display a continuously updated summary of confirmed answers.
+
+Include:
+- Project objective.
+- Target users.
+- Selected features.
+- Important workflows.
+- Technology preferences.
+- Constraints.
+- Unresolved questions.
+- Assumptions requiring approval.
+- MVP priorities.
+
+Allow users to edit any answer directly from the summary.
+
+Changing an answer must update relevant dependent requirements and the completeness assessment.
+
+Show section completion based on required information, not simply the number of questions answered.
+
+Do not pressure users to complete optional sections.
+
+---
+
+## 9. AI PROJECT BLUEPRINT GENERATOR
+
+When the user chooses "Generate Project Blueprint", produce a structured specification based strictly on the saved project data.
+
+Include:
+1. Executive summary.
+2. Problem statement.
+3. Project goals.
+4. Target users.
+5. Confirmed functional requirements.
+6. User roles and permissions.
+7. Page-by-page UI plan.
+8. Detailed user journeys.
+9. Workflow diagrams.
+10. Automation rules.
+11. Database entities and relationships.
+12. API requirements.
+13. AI architecture, where applicable.
+14. Security requirements.
+15. Integration requirements.
+16. Validation rules.
+17. Error handling.
+18. Testing strategy.
+19. MVP scope.
+20. Future development phases.
+21. Acceptance criteria.
+22. Unresolved decisions.
+23. Assumptions requiring approval.
+
+Clearly label AI-generated suggestions separately from confirmed requirements.
+
+Do not invent missing business rules, APIs, credentials, integrations, or user approvals.
+
+Provide:
+- Markdown export.
+- PDF export.
+- DOCX export.
+- JSON export.
+- CSV requirements export, where appropriate.
+
+Exports must be real downloadable files generated by the backend, not fake buttons.
+
+---
+
+## 10. DASHBOARD AND PROJECT MANAGEMENT
+
+Build a functional dashboard with:
+- Create project.
+- Continue draft.
+- Project completion status.
+- Requirements summary.
+- Outstanding decisions.
+- Blueprint generation.
+- Export history.
+- Project duplication.
+- Archive and delete controls.
+
+Support multiple projects per authorized user.
+
+Each project must have isolated requirements, files, responses, exports, and history.
+
+Provide a clear confirmation before destructive operations.
+
+---
+
+## 11. ADMINISTRATION
+
+Implement role-based permissions.
+
+Suggested roles:
+- User.
+- Project reviewer.
+- Administrator.
+
+Administrators can:
+- Manage question templates.
+- Manage reusable sections.
+- Configure conditional rules.
+- Manage supported project types.
+- Review operational logs.
+- Configure AI providers.
+- Manage retention settings.
+- View aggregate usage analytics when authorized.
+
+Do not expose private project responses to administrators unnecessarily. Define and enforce explicit access policies.
+
+---
+
+## 12. TECHNICAL IMPLEMENTATION
+
+Use a maintainable, typed architecture.
+
+Preferred stack:
+- Frontend: React, TypeScript, Vite, Tailwind CSS.
+- UI components: accessible reusable component library.
+- Backend: Python FastAPI.
+- Database: PostgreSQL.
+- ORM and migrations: SQLAlchemy and Alembic.
+- Authentication: secure session-based authentication or appropriately implemented JWT.
+- AI integration: provider abstraction supporting configured local or hosted models.
+- File processing: validated backend processing.
+- Background jobs: task queue when required.
+- Storage: private object storage or appropriately secured local development storage.
+- Testing: frontend tests, backend unit tests, integration tests, and end-to-end tests.
+
+If the existing repository already has a working stack, inspect it first and preserve compatible architecture instead of unnecessarily rewriting the application.
+
+### Data model
+
+Design appropriate entities for:
+- Users.
+- Organizations, if required.
+- Projects.
+- Project memberships.
+- Templates.
+- Template versions.
+- Sections.
+- Questions.
+- Conditional rules.
+- Responses.
+- Requirements.
+- Assumptions.
+- Unresolved decisions.
+- Uploaded files.
+- Generated documents.
+- Audit events.
+- Export jobs.
+
+Use proper foreign keys, indexes, uniqueness constraints, transactions, and tenant isolation where applicable.
+
+Never store all project data in a single unstructured field if doing so would prevent reliable querying, validation, or versioning.
+
+### API design
+
+Implement documented APIs for:
+- Authentication.
+- Project CRUD.
+- Template retrieval.
+- Dynamic question retrieval.
+- Answer saving.
+- Conditional visibility evaluation.
+- Requirements summary.
+- Completeness analysis.
+- Blueprint generation.
+- File uploads.
+- Export generation.
+- Project history.
+- Administration.
+
+Use consistent response schemas, error handling, pagination where appropriate, and API documentation.
+
+### AI reliability
+
+- Validate structured AI outputs against schemas.
+- Use deterministic rules for critical business logic.
+- Treat uploaded documents as untrusted data.
+- Prevent prompt injection from uploaded files from changing system instructions.
+- Keep API keys on the server.
+- Never expose credentials in frontend bundles or logs.
+- Handle timeouts, rate limits, retries, and unavailable models.
+- Provide a useful fallback when AI is unavailable.
+- Require user confirmation before saving AI-generated decisions as confirmed requirements.
+
+---
+
+## 13. SECURITY AND PRIVACY
+
+Implement:
+- Server-side authorization.
+- Input validation and output encoding.
+- CSRF protection where applicable.
+- Rate limiting.
+- Secure cookies.
+- Password hashing when password authentication is used.
+- Secure upload limits and file-type validation.
+- Protection against malicious document uploads.
+- Secrets management.
+- Audit logging without sensitive payload leakage.
+- Data export and deletion controls.
+- Backup and recovery procedures.
+
+Never trust frontend-only permissions.
+
+Never execute uploaded code, spreadsheet macros, or arbitrary document content.
+
+Protect private responses and generated files against unauthorized access.
+
+---
+
+## 14. PERFORMANCE AND RELIABILITY
+
+- Save answers incrementally.
+- Debounce frequent autosave requests.
+- Prevent duplicate submissions.
+- Make long-running AI and export jobs observable.
+- Show real progress where available.
+- Recover from failed generation.
+- Preserve existing responses during template changes.
+- Use pagination and appropriate indexes.
+- Avoid unnecessary network calls and expensive AI requests.
+- Make retries safe and idempotent where possible.
+
+Do not display fake progress percentages or claim a file was generated before the backend confirms success.
+
+---
+
+## 15. TESTING REQUIREMENTS
+
+Create automated tests for:
+- Conditional question visibility.
+- Required versus optional questions.
+- Skip behavior.
+- Autosave and resume.
+- Back navigation.
+- Changes to earlier answers.
+- Dependency recalculation.
+- Contradiction detection.
+- Duplicate question prevention.
+- Access control.
+- Project data isolation.
+- AI schema validation.
+- Export generation.
+- File upload restrictions.
+- Error recovery.
+- Accessibility.
+- Responsive layouts.
+
+Test at least these user scenarios:
+1. Beginner who does not know technical terminology.
+2. User with a detailed project specification.
+3. User who skips optional questions.
+4. User who changes an earlier answer.
+5. User who resumes an unfinished project.
+6. User whose AI provider is unavailable.
+7. User attempting to access another user's project.
+8. User exporting a completed blueprint.
+
+---
+
+## 16. DEVELOPMENT WORKFLOW
+
+Before implementation:
+1. Inspect the existing repository.
+2. Identify existing features and reusable components.
+3. Document assumptions and unresolved decisions.
+4. Propose the architecture and implementation plan.
+5. Identify dependencies and risks.
+
+Then implement incrementally:
+1. Design system and responsive layout.
+2. Authentication and project persistence.
+3. Versioned question templates.
+4. Dynamic questionnaire engine.
+5. Autosave and resume.
+6. Requirements summary.
+7. AI-assisted completeness analysis.
+8. Blueprint generation.
+9. Export pipeline.
+10. Administration.
+11. Security hardening.
+12. Automated testing and deployment documentation.
+
+After each phase:
+- Run relevant tests.
+- Fix regressions.
+- Verify the actual user workflow.
+- Document remaining limitations.
+
+Do not replace existing functional code without justification.
+
+Do not leave core functionality as TODOs, static mock data, or placeholder buttons.
+
+---
+
+## 17. ACCEPTANCE CRITERIA
+
+The product is ready for its first production-oriented release only when:
+
+- A user can create and save a project.
+- Questions adapt correctly to previous answers.
+- Irrelevant questions remain hidden.
+- Optional questions can be skipped.
+- Users can resume drafts without losing responses.
+- Changing answers updates dependent requirements.
+- Confirmed answers and AI suggestions are distinguishable.
+- A complete requirements summary can be reviewed and edited.
+- The blueprint is generated from actual saved responses.
+- DOCX, PDF, and other advertised exports work correctly.
+- Permissions are enforced on the backend.
+- The application works on desktop and mobile.
+- Important failure states are handled.
+- Automated tests cover core workflows.
+- Deployment and configuration instructions are documented.
+
+## FINAL INSTRUCTION
+
+Build a genuinely useful, polished, adaptive requirements-planning application—not a static form demo.
+
+Prioritize simplicity for users, correctness of requirements, reliable automation, clear workflows, maintainable architecture, privacy, and production quality.
+
+Start by inspecting the existing project and producing a concise implementation plan. Then build and test the application in incremental, verifiable phases.
+
+Never claim a feature is complete unless it has actually been implemented and tested.

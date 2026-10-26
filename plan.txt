@@ -1,0 +1,40 @@
+உன்னுடைய platform-ல் இருக்க வேண்டிய workflows
+
+1. AI Academic Workspace
+
+Topic அல்லது syllabus upload → MCQs, 2/10/15-mark questions, answer keys, notes மற்றும் question paper → review → Word/PDF export.
+
+
+
+
+2. Document & Excel Automation
+
+Excel/PDF upload → data extraction → calculations and validation → formatted reports → download.
+
+
+
+
+3. Event & Certificate Management
+
+Event create → participant list import → attendance and winners → certificate template → bulk PDF generation → QR verification.
+
+
+
+
+4. Result Analysis
+
+Marks upload → pass percentage, averages, arrears and weak topics → charts and downloadable reports.
+
+
+
+
+5. Staff Work Management
+
+Tasks, lesson plans, deadlines, event coordination, reminders, approvals மற்றும் work history.
+
+
+
+
+6. Syllabus & Resource Hub
+
+Department, semester, subject, unit, syllabus, notes, question banks மற்றும் reusable academic templates.
