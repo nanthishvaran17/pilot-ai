@@ -3,7 +3,8 @@ import {
   GraduationCap, FileSpreadsheet, Award, BarChart3, 
   CalendarCheck, BookOpen, Download, FileText, CheckCircle2, 
   Sparkles, Plus, QrCode, Search, AlertCircle, ArrowRight,
-  Clock, Check, RefreshCw, Printer, ExternalLink, ShieldCheck
+  Clock, Check, RefreshCw, Printer, ExternalLink, ShieldCheck,
+  Trash2, Copy, Eye
 } from 'lucide-react';
 
 interface StaffWorkspaceProps {
@@ -100,6 +101,27 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
     setNewPartName('');
     setShowAddPartModal(false);
     onShowToast('success', 'Participant Added', `${newPartName} registered.`);
+  };
+
+  // Interactive helper: Add new task
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [newTaskDeadline, setNewTaskDeadline] = useState('05 November 2026');
+  const [newTaskPriority, setNewTaskPriority] = useState('Medium');
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+
+  const handleAddTask = () => {
+    if (!newTaskTitle.trim()) return;
+    const newTask = {
+      id: Math.random().toString(36).substring(2, 9),
+      title: newTaskTitle,
+      deadline: newTaskDeadline,
+      priority: newTaskPriority,
+      status: 'In Progress'
+    };
+    setStaffTasks([newTask, ...staffTasks]);
+    setNewTaskTitle('');
+    setShowAddTaskModal(false);
+    onShowToast('success', 'Task Added', `Scheduled: ${newTask.title}`);
   };
 
   // Interactive helper: Toggle Task Completion
@@ -326,7 +348,7 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
               </div>
 
               {/* Sample Presets */}
-              <div className="flex items-center space-x-2 text-xs">
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
                 <span className="text-slate-400 font-medium">Quick Presets:</span>
                 <button
                   onClick={() => {
@@ -334,7 +356,7 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
                     setSubjectName('Design and Analysis of Algorithms');
                     setSyllabusTopic('Asymptotic Notations, Recurrence Relations, Divide & Conquer, Dynamic Programming, Greedy Algorithms');
                   }}
-                  className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold text-[11px]"
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold text-[11px]"
                 >
                   Algorithms
                 </button>
@@ -344,9 +366,40 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
                     setSubjectName('Operating Systems');
                     setSyllabusTopic('Processes, Threads, CPU Scheduling, Deadlocks, Memory Management, Paging, Virtual Memory');
                   }}
-                  className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold text-[11px]"
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold text-[11px]"
                 >
                   Operating Systems
+                </button>
+                <button
+                  onClick={() => {
+                    setSubjectCode('CS3591');
+                    setSubjectName('Computer Networks');
+                    setSyllabusTopic('OSI Model, TCP/IP, Flow Control, Sliding Window, Routing Algorithms, OSPF, BGP, Congestion Control');
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold text-[11px]"
+                >
+                  Networks
+                </button>
+                <button
+                  onClick={() => {
+                    setSubjectCode('CS3391');
+                    setSubjectName('Database Management Systems');
+                    setSyllabusTopic('ER Modeling, Relational Algebra, SQL, Normalization 1NF to BCNF, Transactions, ACID Properties, Indexing');
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold text-[11px]"
+                >
+                  DBMS
+                </button>
+                <button
+                  onClick={() => {
+                    setSubjectCode('');
+                    setSubjectName('');
+                    setExamTitle('');
+                    setSyllabusTopic('');
+                  }}
+                  className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700 text-[11px]"
+                >
+                  Clear Form
                 </button>
               </div>
             </div>
@@ -358,7 +411,8 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
                   type="text"
                   value={subjectCode}
                   onChange={(e) => setSubjectCode(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                  placeholder="e.g. CS3401"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-mono font-bold"
                 />
               </div>
 
@@ -368,7 +422,8 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
                   type="text"
                   value={subjectName}
                   onChange={(e) => setSubjectName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                  placeholder="e.g. Design & Analysis of Algorithms"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-semibold"
                 />
               </div>
 
@@ -397,11 +452,11 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
             <div className="flex justify-end pt-2">
               <button
                 onClick={handleGenerateQuestionPaper}
-                disabled={isGeneratingQP}
-                className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-md shadow-brand-500/20 disabled:opacity-40"
+                disabled={isGeneratingQP || !subjectCode.trim()}
+                className="inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-md shadow-brand-500/20 disabled:opacity-40"
               >
                 <Sparkles className="w-4 h-4" />
-                <span>{isGeneratingQP ? 'Generating Question Paper...' : 'Generate Full Question Paper & Key'}</span>
+                <span>{isGeneratingQP ? 'Generating Question Paper with Bloom\'s...' : 'Generate Full Question Paper & Key'}</span>
               </button>
             </div>
           </div>
@@ -420,16 +475,34 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
                     {generatedPaper.subject_code} — {generatedPaper.subject_name}
                   </h4>
                   <p className="text-xs text-slate-500">
-                    {generatedPaper.exam_title} • Time: 3 Hours • Max Marks: 100
+                    {generatedPaper.exam_title} • Time: 3 Hours • Max Marks: 100 • Bloom's Taxonomy Mapped
                   </p>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setShowAnswerKey(!showAnswerKey)}
-                    className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                    className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                   >
-                    {showAnswerKey ? 'Show Question Paper' : 'Show Answer Key'}
+                    {showAnswerKey ? 'Show Question Paper' : 'Show Answer Key & Rubrics'}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const text = `NANDHA ENGINEERING COLLEGE (AUTONOMOUS)\n${generatedPaper.subject_code} - ${generatedPaper.subject_name}\n${generatedPaper.exam_title}\n\nPART A (5 x 2 = 10 Marks)\n` +
+                        generatedPaper.content.part_a?.map((q: any) => `Q.${q.q_no} ${q.question} [${q.bloom_level}]`).join('\n') +
+                        '\n\nPART B (3 x 10 = 30 Marks)\n' +
+                        generatedPaper.content.part_b?.map((b: any) => `Q.${b.q_no} (a) ${b.question}\n[OR]\n(b) ${b.or_question}`).join('\n\n') +
+                        '\n\nPART C (1 x 15 = 15 Marks)\n' +
+                        generatedPaper.content.part_c?.map((c: any) => `Q.${c.q_no} ${c.question}`).join('\n');
+                      navigator.clipboard.writeText(text);
+                      onShowToast('success', 'Copied to Clipboard', 'Full question paper text copied.');
+                    }}
+                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold"
+                    title="Copy question paper plain text to clipboard"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy Text</span>
                   </button>
 
                   <a
@@ -619,58 +692,103 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
                   <tr>
                     <th className="py-2.5 px-3">Register No</th>
                     <th className="py-2.5 px-3">Student Name</th>
-                    <th className="py-2.5 px-3">CIA-1 (Max 50)</th>
-                    <th className="py-2.5 px-3">CIA-2 (Max 50)</th>
-                    <th className="py-2.5 px-3">Assignment (Max 10)</th>
-                    <th className="py-2.5 px-3">Scaled Total</th>
+                    <th className="py-2.5 px-3">CIA-1 (50)</th>
+                    <th className="py-2.5 px-3">CIA-2 (50)</th>
+                    <th className="py-2.5 px-3">Assign (10)</th>
+                    <th className="py-2.5 px-3">Scaled Mark</th>
+                    <th className="py-2.5 px-3 text-center">Result</th>
+                    <th className="py-2.5 px-3 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {excelRows.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                      <td className="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{row.reg_no}</td>
-                      <td className="py-2.5 px-3 text-slate-700 dark:text-slate-300">{row.name}</td>
-                      <td className="py-2.5 px-3">
-                        <input
-                          type="number"
-                          value={row.cia1}
-                          onChange={(e) => {
-                            const newRows = [...excelRows];
-                            newRows[idx].cia1 = Number(e.target.value);
-                            setExcelRows(newRows);
-                          }}
-                          className="w-16 px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-center font-bold"
-                        />
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <input
-                          type="number"
-                          value={row.cia2}
-                          onChange={(e) => {
-                            const newRows = [...excelRows];
-                            newRows[idx].cia2 = Number(e.target.value);
-                            setExcelRows(newRows);
-                          }}
-                          className="w-16 px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-center font-bold"
-                        />
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <input
-                          type="number"
-                          value={row.assignment}
-                          onChange={(e) => {
-                            const newRows = [...excelRows];
-                            newRows[idx].assignment = Number(e.target.value);
-                            setExcelRows(newRows);
-                          }}
-                          className="w-16 px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-center font-bold"
-                        />
-                      </td>
-                      <td className="py-2.5 px-3 font-bold text-brand-600">
-                        {round((row.cia1 * 0.8) + (row.cia2 * 0.8) + row.assignment + 10, 1)} / 100
-                      </td>
-                    </tr>
-                  ))}
+                  {excelRows.map((row, idx) => {
+                    const scaledMark = round((row.cia1 * 0.8) + (row.cia2 * 0.8) + row.assignment + 10, 1);
+                    const isArrear = scaledMark < 50;
+                    return (
+                      <tr 
+                        key={idx} 
+                        className={`transition-colors ${
+                          isArrear 
+                            ? 'bg-rose-50/60 dark:bg-rose-950/25 hover:bg-rose-100/60' 
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                        }`}
+                      >
+                        <td className="py-2 px-3 font-mono font-bold text-slate-900 dark:text-white">{row.reg_no}</td>
+                        <td className="py-2 px-3 text-slate-700 dark:text-slate-300 font-medium">{row.name}</td>
+                        <td className="py-2 px-3">
+                          <input
+                            type="number"
+                            min="0"
+                            max="50"
+                            value={row.cia1}
+                            onChange={(e) => {
+                              const newRows = [...excelRows];
+                              newRows[idx].cia1 = Number(e.target.value);
+                              setExcelRows(newRows);
+                            }}
+                            className="w-14 px-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center font-bold"
+                          />
+                        </td>
+                        <td className="py-2 px-3">
+                          <input
+                            type="number"
+                            min="0"
+                            max="50"
+                            value={row.cia2}
+                            onChange={(e) => {
+                              const newRows = [...excelRows];
+                              newRows[idx].cia2 = Number(e.target.value);
+                              setExcelRows(newRows);
+                            }}
+                            className="w-14 px-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center font-bold"
+                          />
+                        </td>
+                        <td className="py-2 px-3">
+                          <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            value={row.assignment}
+                            onChange={(e) => {
+                              const newRows = [...excelRows];
+                              newRows[idx].assignment = Number(e.target.value);
+                              setExcelRows(newRows);
+                            }}
+                            className="w-14 px-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center font-bold"
+                          />
+                        </td>
+                        <td className="py-2 px-3 font-bold font-mono">
+                          <span className={isArrear ? 'text-rose-600' : 'text-emerald-600'}>
+                            {scaledMark} / 100
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          {isArrear ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-700 border border-rose-300 dark:bg-rose-950 dark:text-rose-300">
+                              FAIL (Arrear)
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-700 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300">
+                              PASS
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2 px-3 text-right">
+                          <button
+                            onClick={() => {
+                              const filtered = excelRows.filter((_, i) => i !== idx);
+                              setExcelRows(filtered);
+                              onShowToast('info', 'Student Removed', `Deleted ${row.name}`);
+                            }}
+                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 transition-colors"
+                            title="Remove student from roster"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -754,6 +872,38 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
               </button>
             </div>
 
+            {/* Event Quick Presets */}
+            <div className="flex flex-wrap items-center gap-1.5 text-xs pb-1">
+              <span className="text-slate-400 font-medium">Event Presets:</span>
+              <button
+                onClick={() => {
+                  setEventTitle('National Level Technical Symposium: CYBERFEST 2026');
+                  setEventDate('28 October 2026');
+                }}
+                className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold text-[11px]"
+              >
+                CYBERFEST 2026
+              </button>
+              <button
+                onClick={() => {
+                  setEventTitle('Faculty Development Program (FDP): Artificial Intelligence & Generative AI');
+                  setEventDate('15 November 2026');
+                }}
+                className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold text-[11px]"
+              >
+                AI & GenAI FDP
+              </button>
+              <button
+                onClick={() => {
+                  setEventTitle('Hands-on National Workshop: Full-Stack Cloud Architecture');
+                  setEventDate('05 December 2026');
+                }}
+                className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold text-[11px]"
+              >
+                Cloud Workshop
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div>
                 <label className="block font-semibold mb-1">Event Title</label>
@@ -833,6 +983,7 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
                       <th className="py-2.5 px-3">College</th>
                       <th className="py-2.5 px-3">Department</th>
                       <th className="py-2.5 px-3">Achievement / Position</th>
+                      <th className="py-2.5 px-3 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -842,6 +993,19 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
                         <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400">{p.college}</td>
                         <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400">{p.department}</td>
                         <td className="py-2.5 px-3 font-semibold text-brand-600 dark:text-brand-400">{p.position}</td>
+                        <td className="py-2.5 px-3 text-right">
+                          <button
+                            onClick={() => {
+                              const filtered = participantsList.filter((_, i) => i !== idx);
+                              setParticipantsList(filtered);
+                              onShowToast('info', 'Participant Removed', `Deleted ${p.name}`);
+                            }}
+                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 transition-colors"
+                            title="Remove participant"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1089,8 +1253,50 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   Academic Deadlines & Tasks
                 </h3>
-                <span className="text-xs text-slate-400 font-medium">Click task to toggle</span>
+                <button
+                  onClick={() => setShowAddTaskModal(!showAddTaskModal)}
+                  className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 text-xs font-semibold border border-brand-200 dark:border-brand-800"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{showAddTaskModal ? 'Cancel' : 'Add Task'}</span>
+                </button>
               </div>
+
+              {showAddTaskModal && (
+                <div className="p-3 rounded-xl border border-brand-200 dark:border-brand-900 bg-brand-50/50 dark:bg-brand-950/20 space-y-2 text-xs">
+                  <input
+                    type="text"
+                    placeholder="Task Title (e.g. Submit CIA-2 Question Paper)"
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Deadline (e.g. 10 Nov 2026)"
+                      value={newTaskDeadline}
+                      onChange={(e) => setNewTaskDeadline(e.target.value)}
+                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                    />
+                    <select
+                      value={newTaskPriority}
+                      onChange={(e) => setNewTaskPriority(e.target.value)}
+                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                    >
+                      <option value="High">High Priority</option>
+                      <option value="Medium">Medium Priority</option>
+                      <option value="Low">Low Priority</option>
+                    </select>
+                  </div>
+                  <button
+                    onClick={handleAddTask}
+                    className="w-full py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-bold"
+                  >
+                    Save & Schedule Task
+                  </button>
+                </div>
+              )}
               <div className="space-y-3">
                 {staffTasks.map((task) => (
                   <div 

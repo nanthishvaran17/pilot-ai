@@ -12,10 +12,6 @@
 
 <br/>
 
-<img src="./assets/pilot_ai_hero_banner.jpg" alt="Pilot AI Platform Dashboard" width="100%" style="border-radius: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);" />
-
-<br/><br/>
-
 ### ⚡ *Turn messy, vague project concepts into production-grade Software Requirement Specifications (SRS), technical architecture blueprints, and MoSCoW roadmaps in minutes.*
 
 [Explore Features](#-core-capabilities) • [Live Architecture](#-system-architecture) • [MoSCoW Matrix](#-moscow-prioritization-engine) • [API Reference](#-interactive-api-endpoints) • [Quick Start](#-quick-start--developer-guide)
