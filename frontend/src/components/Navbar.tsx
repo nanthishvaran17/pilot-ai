@@ -39,45 +39,40 @@ export const Navbar: React.FC<NavbarProps> = ({
         
         {/* Brand / Logo */}
         <div className="flex items-center space-x-3">
-          {activeProjectName ? (
-            <button
-              onClick={onBackToDashboard}
-              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-xs font-semibold"
-              title="Return to Dashboard"
-            >
-              <Home className="w-4 h-4" />
-              <span className="hidden sm:inline">Dashboard</span>
-            </button>
-          ) : null}
-
           <div 
             className="flex items-center space-x-2.5 cursor-pointer" 
-            onClick={onBackToDashboard}
+            onClick={() => setCurrentView('staff_suite')}
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-              <Compass className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-brand-500/25">
+              <GraduationCap className="w-5 h-5" />
             </div>
             <div>
-              <span className="font-bold text-base tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                {productName}
-              </span>
-              <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
-                FACULTY
-              </span>
+              <div className="flex items-center space-x-1.5">
+                <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
+                  Nandha Faculty Hub
+                </span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                  STAFF SUITE
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Autonomous Academic Platform</p>
             </div>
           </div>
 
-          {/* Quick Mode Toggle: Staff Suite vs Blueprint Planner */}
+          {/* Quick switch to secondary Blueprint/Planning mode */}
           <button
             onClick={() => setCurrentView(currentView === 'staff_suite' ? 'dashboard' : 'staff_suite')}
-            className={`hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`hidden lg:inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
               currentView === 'staff_suite'
-                ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20'
-                : 'bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 hover:bg-brand-100'
+                ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                : 'bg-brand-600 text-white shadow-sm'
             }`}
           >
-            <GraduationCap className="w-3.5 h-3.5" />
-            <span>Staff Academic Suite (6 Workflows)</span>
+            {currentView === 'staff_suite' ? (
+              <span>Switch to Project Blueprint Planner</span>
+            ) : (
+              <span>Back to Staff Academic Suite (6 Workflows)</span>
+            )}
           </button>
         </div>
 

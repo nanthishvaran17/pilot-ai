@@ -128,12 +128,11 @@ export function App() {
         completenessScore={selectedProject?.completeness_score}
         onBackToDashboard={() => {
           setSelectedProject(null);
-          setCurrentView('dashboard');
-          loadProjects();
+          setCurrentView('staff_suite');
         }}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
-        productName="ProjectPilot AI"
+        productName="Nandha Faculty Hub"
       />
 
       {/* Main Workspace Body */}

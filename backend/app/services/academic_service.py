@@ -574,7 +574,8 @@ class AcademicService:
         os.makedirs(export_dir, exist_ok=True)
 
         for idx, p in enumerate(participants, 1):
-            cert_code = f"NEC-{event.department.upper()}-{datetime.utcnow().year}-{str(idx).zfill(3)}"
+            short_token = uuid.uuid4().hex[:6].upper()
+            cert_code = f"NEC-{event.department.upper()}-{datetime.utcnow().year}-{short_token}"
             verify_url = f"http://localhost:3000/verify/{cert_code}"
 
             # 1. Generate QR Code image

@@ -61,6 +61,69 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
 
   // Workflow 6: Syllabus & Resource Hub state
   const [resources, setResources] = useState<any[]>([]);
+  const [resourceSearch, setResourceSearch] = useState('');
+  const [selectedDept, setSelectedDept] = useState('All');
+
+  // Interactive helper: Add new student row in marks table
+  const handleAddStudentRow = () => {
+    const nextId = 4000 + excelRows.length + 1;
+    setExcelRows([
+      ...excelRows,
+      {
+        reg_no: `73182110${nextId}`,
+        name: `Student ${excelRows.length + 1}`,
+        cia1: 35,
+        cia2: 38,
+        assignment: 8
+      }
+    ]);
+    onShowToast('info', 'Student Added', 'New student row added to mark sheet.');
+  };
+
+  // Interactive helper: Add new participant
+  const [newPartName, setNewPartName] = useState('');
+  const [newPartCollege, setNewPartCollege] = useState('Nandha Engineering College');
+  const [newPartPos, setNewPartPos] = useState('Participant');
+  const [showAddPartModal, setShowAddPartModal] = useState(false);
+
+  const handleAddParticipant = () => {
+    if (!newPartName.trim()) return;
+    setParticipantsList([
+      ...participantsList,
+      {
+        name: newPartName,
+        college: newPartCollege,
+        department: "CSE",
+        position: newPartPos
+      }
+    ]);
+    setNewPartName('');
+    setShowAddPartModal(false);
+    onShowToast('success', 'Participant Added', `${newPartName} registered.`);
+  };
+
+  // Interactive helper: Toggle Task Completion
+  const handleToggleTask = (taskId: string) => {
+    setStaffTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const nextStatus = t.status === 'Completed' ? 'In Progress' : 'Completed';
+        return { ...t, status: nextStatus };
+      }
+      return t;
+    }));
+  };
+
+  // Interactive helper: Toggle Lesson Plan Unit Completion
+  const handleToggleLessonPlan = (planId: string) => {
+    setLessonPlans(prev => prev.map(lp => {
+      if (lp.id === planId) {
+        const nextStatus = lp.status === 'Completed' ? 'In Progress' : 'Completed';
+        return { ...lp, status: nextStatus };
+      }
+      return lp;
+    }));
+    onShowToast('info', 'Syllabus Updated', 'Lesson plan unit status updated.');
+  };
 
   useEffect(() => {
     // Load initial data for workflow 5 and 6
@@ -509,6 +572,45 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
                 <span>{isProcessingExcel ? 'Validating & Formatting...' : 'Calculate & Generate Grade Sheet'}</span>
               </button>
             </div>
+            {/* Action Bar: Add student, quick sample batches */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleAddStudentRow}
+                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold"
+                >
+                  <Plus className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Add Student Row</span>
+                </button>
+                <button
+                  onClick={() => {
+                    const sample15 = [
+                      { reg_no: "731821104001", name: "Aakash M", cia1: 44, cia2: 42, assignment: 10 },
+                      { reg_no: "731821104002", name: "Bavithra S", cia1: 48, cia2: 46, assignment: 10 },
+                      { reg_no: "731821104003", name: "Chandran R", cia1: 18, cia2: 20, assignment: 6 },
+                      { reg_no: "731821104004", name: "Divya K", cia1: 38, cia2: 40, assignment: 9 },
+                      { reg_no: "731821104005", name: "Elango P", cia1: 46, cia2: 44, assignment: 10 },
+                      { reg_no: "731821104006", name: "Farooq A", cia1: 14, cia2: 16, assignment: 5 },
+                      { reg_no: "731821104007", name: "Gokulraj N", cia1: 42, cia2: 45, assignment: 10 },
+                      { reg_no: "731821104008", name: "Harini T", cia1: 47, cia2: 49, assignment: 10 },
+                      { reg_no: "731821104009", name: "Ishwarya M", cia1: 36, cia2: 39, assignment: 8 },
+                      { reg_no: "731821104010", name: "Jagan K", cia1: 22, cia2: 24, assignment: 7 },
+                      { reg_no: "731821104011", name: "Kavitha R", cia1: 45, cia2: 43, assignment: 9 },
+                      { reg_no: "731821104012", name: "Logesh S", cia1: 16, cia2: 18, assignment: 6 }
+                    ];
+                    setExcelRows(sample15);
+                    onShowToast('info', 'Loaded 12-Student Batch', 'Sample roster ready for evaluation.');
+                  }}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-50 font-medium"
+                >
+                  Load 12-Student Batch
+                </button>
+              </div>
+
+              <div className="text-xs text-slate-500">
+                Formula: <code className="text-brand-600 font-mono font-bold">(CIA1*0.8) + (CIA2*0.8) + Assign + 10</code>
+              </div>
+            </div>
 
             {/* Editable Raw Marks Grid */}
             <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
@@ -676,7 +778,53 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
 
             {/* Participants Table */}
             <div>
-              <span className="font-semibold text-xs block mb-2">Participant Roster ({participantsList.length})</span>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <span className="font-semibold text-xs">Participant Roster ({participantsList.length} Registered)</span>
+                <button
+                  onClick={() => setShowAddPartModal(!showAddPartModal)}
+                  className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-xs font-semibold border border-amber-200 dark:border-amber-800"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{showAddPartModal ? 'Cancel' : 'Add Participant'}</span>
+                </button>
+              </div>
+
+              {showAddPartModal && (
+                <div className="p-3.5 mb-3 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20 grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+                  <input
+                    type="text"
+                    placeholder="Participant Name"
+                    value={newPartName}
+                    onChange={(e) => setNewPartName(e.target.value)}
+                    className="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  />
+                  <input
+                    type="text"
+                    placeholder="College Name"
+                    value={newPartCollege}
+                    onChange={(e) => setNewPartCollege(e.target.value)}
+                    className="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  />
+                  <select
+                    value={newPartPos}
+                    onChange={(e) => setNewPartPos(e.target.value)}
+                    className="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  >
+                    <option value="First Prize">First Prize</option>
+                    <option value="Second Prize">Second Prize</option>
+                    <option value="Third Prize">Third Prize</option>
+                    <option value="Paper Presenter">Paper Presenter</option>
+                    <option value="Participant">Participant</option>
+                  </select>
+                  <button
+                    onClick={handleAddParticipant}
+                    className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold"
+                  >
+                    Confirm & Register
+                  </button>
+                </div>
+              )}
+
               <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-400 text-[10px] uppercase">
@@ -883,18 +1031,29 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
             {/* Lesson Plans (Column 7) */}
             <div className="lg:col-span-7 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                  <CalendarCheck className="w-5 h-5 text-brand-600" />
-                  <span>Lesson Plan & Syllabus Delivery Tracker</span>
-                </h3>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
-                  CS3401 Algorithms
-                </span>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <CalendarCheck className="w-5 h-5 text-brand-600" />
+                    <span>Lesson Plan & Syllabus Delivery Tracker</span>
+                  </h3>
+                  <p className="text-xs text-slate-500">CS3401 Design & Analysis of Algorithms • Semester 4</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-bold text-brand-600">
+                    {lessonPlans.filter(lp => lp.status === 'Completed').length} of {lessonPlans.length} Units Done
+                  </span>
+                  <div className="w-28 h-2 rounded-full bg-slate-100 dark:bg-slate-800 mt-1 overflow-hidden">
+                    <div 
+                      className="h-full bg-emerald-500 transition-all duration-300"
+                      style={{ width: `${Math.round((lessonPlans.filter(lp => lp.status === 'Completed').length / (lessonPlans.length || 1)) * 100)}%` }}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2.5">
                 {lessonPlans.map((lp) => (
-                  <div key={lp.id} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+                  <div key={lp.id} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
                     <div className="space-y-0.5">
                       <div className="flex items-center space-x-2">
                         <span className="font-bold text-brand-600">Unit {lp.unit_number}</span>
@@ -905,15 +1064,20 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
                       </p>
                     </div>
 
-                    <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
-                      lp.status === 'Completed'
-                        ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
-                        : lp.status === 'In Progress'
-                        ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
-                    }`}>
-                      {lp.status}
-                    </span>
+                    <button
+                      onClick={() => handleToggleLessonPlan(lp.id)}
+                      className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-all cursor-pointer flex items-center space-x-1 ${
+                        lp.status === 'Completed'
+                          ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200'
+                          : lp.status === 'In Progress'
+                          ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 hover:bg-amber-200'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-slate-200'
+                      }`}
+                      title="Click to toggle completion status"
+                    >
+                      {lp.status === 'Completed' ? <Check className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                      <span>{lp.status}</span>
+                    </button>
                   </div>
                 ))}
               </div>
@@ -921,26 +1085,46 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
 
             {/* Staff Tasks & Approvals (Column 5) */}
             <div className="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Upcoming Academic Deadlines & Tasks
-              </h3>
+              <div className="flex justify-between items-center">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Academic Deadlines & Tasks
+                </h3>
+                <span className="text-xs text-slate-400 font-medium">Click task to toggle</span>
+              </div>
               <div className="space-y-3">
                 {staffTasks.map((task) => (
-                  <div key={task.id} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs">
+                  <div 
+                    key={task.id} 
+                    onClick={() => handleToggleTask(task.id)}
+                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs cursor-pointer hover:border-brand-500/40 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-all"
+                  >
                     <div className="flex justify-between items-start">
-                      <span className="font-bold text-slate-900 dark:text-white">{task.title}</span>
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                          task.status === 'Completed'
+                            ? 'bg-emerald-600 border-emerald-600 text-white'
+                            : 'border-slate-400'
+                        }`}>
+                          {task.status === 'Completed' && <Check className="w-3 h-3" />}
+                        </div>
+                        <span className={`font-bold ${task.status === 'Completed' ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'}`}>
+                          {task.title}
+                        </span>
+                      </div>
                       <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${
                         task.priority === 'High' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'
                       }`}>
                         {task.priority}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-[11px] text-slate-400">
+                    <div className="flex justify-between items-center text-[11px] text-slate-400 pl-6">
                       <span className="flex items-center space-x-1">
                         <Clock className="w-3 h-3" />
                         <span>Deadline: {task.deadline}</span>
                       </span>
-                      <span className="font-semibold text-brand-600">{task.status}</span>
+                      <span className={`font-semibold ${task.status === 'Completed' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                        {task.status}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -976,8 +1160,44 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceProps> = ({ onShowToast 
               </div>
             </div>
 
+            {/* Instant Search & Department Filter */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search resources by title, course code (e.g. CS3401, OS), or type..."
+                  value={resourceSearch}
+                  onChange={(e) => setResourceSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs"
+                />
+              </div>
+
+              <select
+                value={selectedDept}
+                onChange={(e) => setSelectedDept(e.target.value)}
+                className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold"
+              >
+                <option value="All">All Departments</option>
+                <option value="CSE">CSE (Computer Science)</option>
+                <option value="IT">IT (Information Tech)</option>
+                <option value="AI&DS">AI & Data Science</option>
+                <option value="ECE">ECE (Electronics)</option>
+              </select>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {resources.map((r) => (
+              {resources
+                .filter((r) => {
+                  const matchSearch =
+                    !resourceSearch.trim() ||
+                    r.title.toLowerCase().includes(resourceSearch.toLowerCase()) ||
+                    r.subject_code.toLowerCase().includes(resourceSearch.toLowerCase()) ||
+                    r.resource_type.toLowerCase().includes(resourceSearch.toLowerCase());
+                  const matchDept = selectedDept === 'All' || r.department === selectedDept;
+                  return matchSearch && matchDept;
+                })
+                .map((r) => (
                 <div key={r.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex flex-col justify-between space-y-3">
                   <div>
                     <div className="flex justify-between items-center mb-1">
