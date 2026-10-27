@@ -7,12 +7,14 @@ import { PrioritizationView } from './components/PrioritizationView';
 import { BlueprintView } from './components/BlueprintView';
 import { RequirementsDrawer } from './components/RequirementsDrawer';
 import { AdminView } from './components/AdminView';
+import { StaffWorkspaceView } from './components/StaffWorkspaceView';
 import { ToastContainer, ToastMessage } from './components/Toast';
 import { api } from './api';
 import { Project } from './types';
 
 export function App() {
-  const [currentView, setCurrentView] = useState<'dashboard' | 'questionnaire' | 'prioritization' | 'blueprint' | 'admin'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'questionnaire' | 'prioritization' | 'blueprint' | 'admin' | 'staff_suite'>('staff_suite');
+
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isIdeaModalOpen, setIsIdeaModalOpen] = useState(false);
@@ -136,6 +138,10 @@ export function App() {
 
       {/* Main Workspace Body */}
       <main className="flex-1 pb-16">
+        {currentView === 'staff_suite' && (
+          <StaffWorkspaceView onShowToast={showToast} />
+        )}
+
         {currentView === 'dashboard' && (
           <Dashboard
             projects={projects}

@@ -9,6 +9,7 @@ from app.api.projects import router as projects_router
 from app.api.questions import router as questions_router
 from app.api.blueprint import router as blueprint_router
 from app.api.admin import router as admin_router
+from app.api.academic import router as academic_router
 
 # Initialize database tables and seed baseline data
 Base.metadata.create_all(bind=engine)
@@ -38,6 +39,8 @@ app.include_router(projects_router, prefix=settings.API_V1_STR)
 app.include_router(questions_router, prefix=settings.API_V1_STR)
 app.include_router(blueprint_router, prefix=settings.API_V1_STR)
 app.include_router(admin_router, prefix=settings.API_V1_STR)
+app.include_router(academic_router, prefix=settings.API_V1_STR)
+
 
 @app.get("/health")
 def health_check():

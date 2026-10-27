@@ -214,3 +214,144 @@ class AuditLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="audit_logs")
+
+
+# ==========================================
+# STAFF ACADEMIC WORKFLOW MODELS (6 MODULES)
+# ==========================================
+
+class AcademicQuestionPaper(Base):
+    __tablename__ = "academic_question_papers"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    institution_name = Column(String(255), default="Nandha Engineering College (Autonomous)")
+    department = Column(String(100), default="Computer Science & Engineering")
+    subject_code = Column(String(50), nullable=False)
+    subject_name = Column(String(255), nullable=False)
+    exam_title = Column(String(100), default="Internal Assessment Examination")
+    semester = Column(String(20), default="Semester IV")
+    duration = Column(String(50), default="3 Hours")
+    max_marks = Column(Integer, default=100)
+    topic_or_syllabus = Column(Text, nullable=False)
+    content_json = Column(JSON, nullable=False) # MCQs, Part A (2M), Part B (10M), Part C (15M)
+    answer_key_json = Column(JSON, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class ExcelAutomationJob(Base):
+    __tablename__ = "excel_automation_jobs"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    file_name = Column(String(255), nullable=False)
+    total_records = Column(Integer, default=0)
+    valid_records = Column(Integer, default=0)
+    invalid_records = Column(Integer, default=0)
+    summary_stats = Column(JSON, default=dict) # Averages, Highest, Lowest, Pass count
+    processed_data = Column(JSON, default=list)
+    output_excel_path = Column(String(500), nullable=True)
+    output_pdf_path = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class AcademicEvent(Base):
+    __tablename__ = "academic_events"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    title = Column(String(255), nullable=False)
+    event_type = Column(String(100), default="Technical Symposium") # Workshop, Conference, Seminar, Symposium, Hackathon
+    department = Column(String(100), default="CSE")
+    event_date = Column(String(50), nullable=False)
+    organizer_name = Column(String(255), default="Faculty Coordinator")
+    signatory_title = Column(String(255), default="Principal & Head of Department")
+    template_style = Column(String(50), default="classic_gold") # classic_gold, modern_blue, academic_emerald
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    certificates = relationship("ParticipantCertificate", back_populates="event", cascade="all, delete-orphan")
+
+
+class ParticipantCertificate(Base):
+    __tablename__ = "participant_certificates"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    event_id = Column(String(36), ForeignKey("academic_events.id"), nullable=False)
+    cert_code = Column(String(50), unique=True, index=True, nullable=False) # e.g. NEC-CERT-2026-001
+    student_name = Column(String(255), nullable=False)
+    college_name = Column(String(255), default="Nandha Engineering College")
+    department = Column(String(100), default="Computer Science & Engineering")
+    position = Column(String(100), default="Participant") # First Prize, Second Prize, Participant, Paper Presenter
+    pdf_path = Column(String(500), nullable=True)
+    verify_url = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    event = relationship("AcademicEvent", back_populates="certificates")
+
+
+class ResultAnalysisRecord(Base):
+    __tablename__ = "result_analysis_records"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    subject_code = Column(String(50), nullable=False)
+    subject_name = Column(String(255), nullable=False)
+    faculty_name = Column(String(255), default="Staff Member")
+    exam_name = Column(String(100), default="Unit Test 1 / Model Exam")
+    total_students = Column(Integer, default=0)
+    passed_count = Column(Integer, default=0)
+    failed_count = Column(Integer, default=0)
+    pass_percentage = Column(Float, default=0.0)
+    class_average = Column(Float, default=0.0)
+    highest_mark = Column(Float, default=0.0)
+    lowest_mark = Column(Float, default=0.0)
+    arrears_students = Column(JSON, default=list) # [{'reg_no': '...', 'name': '...', 'marks': 32}]
+    weak_topics = Column(JSON, default=list) # [{'topic': 'Dynamic Programming', 'avg_score': '35%'}]
+    grade_distribution = Column(JSON, default=dict) # {'O': 10, 'A+': 15, 'A': 20, 'B+': 12, 'B': 5, 'U': 4}
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LessonPlanItem(Base):
+    __tablename__ = "lesson_plan_items"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    department = Column(String(50), default="CSE")
+    semester = Column(String(20), default="IV")
+    subject_code = Column(String(50), nullable=False)
+    subject_name = Column(String(255), nullable=False)
+    unit_number = Column(Integer, default=1)
+    topic_name = Column(String(255), nullable=False)
+    planned_hours = Column(Integer, default=2)
+    actual_hours = Column(Integer, default=2)
+    teaching_aid = Column(String(100), default="PPT & Black Board") # PPT, Black Board, Lab Demo, NPTEL
+    status = Column(String(50), default="Completed") # Completed, In Progress, Pending
+    completion_date = Column(String(50), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class StaffTaskItem(Base):
+    __tablename__ = "staff_task_items"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    category = Column(String(100), default="Exam Duty") # Exam Duty, Mark Entry, Lesson Plan, Mentoring, Event Coordination
+    priority = Column(String(50), default="High") # High, Medium, Low
+    deadline = Column(String(50), nullable=False)
+    status = Column(String(50), default="Pending") # Pending, In Progress, Completed, Approved
+    assigned_to = Column(String(255), default="Staff Member")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class AcademicResourceItem(Base):
+    __tablename__ = "academic_resource_items"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    department = Column(String(50), default="CSE")
+    semester = Column(String(20), default="IV")
+    subject_code = Column(String(50), nullable=False)
+    subject_name = Column(String(255), nullable=False)
+    unit_number = Column(String(20), default="Unit 1")
+    resource_type = Column(String(50), default="Lecture Notes") # Lecture Notes, Syllabus PDF, Question Bank, Lab Manual, Academic Template
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    file_format = Column(String(20), default="PDF")
+    file_size = Column(String(50), default="1.2 MB")
+    created_at = Column(DateTime, default=datetime.utcnow)
+

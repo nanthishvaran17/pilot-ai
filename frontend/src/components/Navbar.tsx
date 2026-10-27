@@ -2,11 +2,12 @@ import React from 'react';
 import { 
   Compass, FileText, CheckSquare, 
   Layers, Shield, Moon, Sun, ArrowLeft,
-  ChevronRight, CheckCircle2, Home
+  ChevronRight, CheckCircle2, Home, GraduationCap
 } from 'lucide-react';
 
 interface NavbarProps {
-  currentView: 'dashboard' | 'questionnaire' | 'prioritization' | 'blueprint' | 'admin';
+  currentView: 'dashboard' | 'questionnaire' | 'prioritization' | 'blueprint' | 'admin' | 'staff_suite';
+
   setCurrentView: (view: any) => void;
   activeProjectName?: string;
   onBackToDashboard?: () => void;
@@ -61,11 +62,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {productName}
               </span>
               <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
-                PRO
+                FACULTY
               </span>
             </div>
           </div>
+
+          {/* Quick Mode Toggle: Staff Suite vs Blueprint Planner */}
+          <button
+            onClick={() => setCurrentView(currentView === 'staff_suite' ? 'dashboard' : 'staff_suite')}
+            className={`hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              currentView === 'staff_suite'
+                ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20'
+                : 'bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 hover:bg-brand-100'
+            }`}
+          >
+            <GraduationCap className="w-3.5 h-3.5" />
+            <span>Staff Academic Suite (6 Workflows)</span>
+          </button>
         </div>
+
 
         {/* Step Wizard Stepper Bar (Active when project is selected) */}
         {activeProjectName && (
