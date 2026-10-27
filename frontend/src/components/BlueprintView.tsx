@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FileDown, FileText, Download, CheckCircle2, 
-  Layers, Database, Shield, Server, Cpu, Check, 
-  RefreshCw, Sparkles, ExternalLink
+  FileDown, Download, CheckCircle2, 
+  RefreshCw, Copy, Check, Printer, Eye,
+  BookOpen, Sparkles
 } from 'lucide-react';
 import { api } from '../api';
 import { Blueprint, ExportJob } from '../types';
 
 interface BlueprintViewProps {
   projectId: string;
+  onShowToast?: (type: 'success' | 'error' | 'info', title: string, message?: string) => void;
 }
 
-export const BlueprintView: React.FC<BlueprintViewProps> = ({ projectId }) => {
+export const BlueprintView: React.FC<BlueprintViewProps> = ({ projectId, onShowToast }) => {
   const [blueprint, setBlueprint] = useState<Blueprint | null>(null);
-  const [exportHistory, setExportHistory] = useState<ExportJob[]>([]);
-  const [activeTab, setActiveTab] = useState<'summary' | 'requirements' | 'ui' | 'architecture' | 'security' | 'testing'>('summary');
+  const [activeTab, setActiveTab] = useState<'preview' | 'summary' | 'requirements' | 'ui' | 'architecture' | 'security' | 'testing'>('preview');
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState<string | null>(null);
+  const [hasCopied, setHasCopied] = useState(false);
 
   useEffect(() => {
     loadBlueprint();
-    loadExports();
   }, [projectId]);
 
   const loadBlueprint = async () => {
@@ -30,32 +30,34 @@ export const BlueprintView: React.FC<BlueprintViewProps> = ({ projectId }) => {
       setBlueprint(bp);
     } catch (err) {
       console.error(err);
+      if (onShowToast) onShowToast('error', 'Failed to load blueprint');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadExports = async () => {
-    try {
-      const history = await api.getExportHistory(projectId);
-      setExportHistory(history);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const handleExport = async (format: string) => {
     setIsExporting(format);
+    if (onShowToast) onShowToast('info', 'Compiling Document', `Generating ${format.toUpperCase()} binary on server...`);
     try {
       const job = await api.exportBlueprint(projectId, format);
-      // Trigger actual file download in browser
+      // Trigger browser download
       window.open(api.getDownloadUrl(job.id), '_blank');
-      await loadExports();
-    } catch (err) {
+      if (onShowToast) onShowToast('success', 'Download Started', `${job.file_name} successfully downloaded!`);
+    } catch (err: any) {
       console.error(err);
+      if (onShowToast) onShowToast('error', 'Export Failed', err.message);
     } finally {
       setIsExporting(null);
     }
+  };
+
+  const handleCopyMarkdown = () => {
+    if (!blueprint) return;
+    navigator.clipboard.writeText(blueprint.markdown_content);
+    setHasCopied(true);
+    if (onShowToast) onShowToast('success', 'Copied to Clipboard', 'Full 23-point Markdown specification copied.');
+    setTimeout(() => setHasCopied(false), 2500);
   };
 
   if (isLoading || !blueprint) {
@@ -70,11 +72,11 @@ export const BlueprintView: React.FC<BlueprintViewProps> = ({ projectId }) => {
   const data = blueprint.content_json;
 
   const exportButtons = [
-    { format: 'pdf', label: 'PDF Document (.pdf)', desc: 'Print-ready executive report with custom typography', color: 'bg-rose-600 hover:bg-rose-500 text-white' },
-    { format: 'docx', label: 'Word Document (.docx)', desc: 'Editable Microsoft Word format with tables & callouts', color: 'bg-blue-600 hover:bg-blue-500 text-white' },
+    { format: 'pdf', label: 'PDF Document (.pdf)', desc: 'ReportLab print-ready executive dossier', color: 'bg-rose-600 hover:bg-rose-500 text-white' },
+    { format: 'docx', label: 'Word Document (.docx)', desc: 'Editable Microsoft Word specification tables', color: 'bg-blue-600 hover:bg-blue-500 text-white' },
     { format: 'md', label: 'Markdown (.md)', desc: 'Developer-ready documentation for Git repos', color: 'bg-slate-800 hover:bg-slate-700 text-white' },
-    { format: 'json', label: 'JSON Schema (.json)', desc: 'Structured machine-readable 23-point specification', color: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
-    { format: 'csv', label: 'Requirements CSV (.csv)', desc: 'Spreadsheet importable MoSCoW requirements matrix', color: 'bg-amber-600 hover:bg-amber-500 text-white' },
+    { format: 'json', label: 'JSON Schema (.json)', desc: 'Machine-readable structured schema', color: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+    { format: 'csv', label: 'Requirements CSV (.csv)', desc: 'Spreadsheet importable MoSCoW priorities', color: 'bg-amber-600 hover:bg-amber-500 text-white' },
   ];
 
   return (
@@ -85,7 +87,7 @@ export const BlueprintView: React.FC<BlueprintViewProps> = ({ projectId }) => {
         <div>
           <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs font-semibold mb-1">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Verified Specification • Version {blueprint.version}</span>
+            <span>Step 3 • Verified Specification • Version {blueprint.version}</span>
           </div>
           <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">
             {blueprint.title}
@@ -95,13 +97,31 @@ export const BlueprintView: React.FC<BlueprintViewProps> = ({ projectId }) => {
           </p>
         </div>
 
-        <button
-          onClick={loadBlueprint}
-          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 self-start md:self-auto"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Re-generate Specification</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={handleCopyMarkdown}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            {hasCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{hasCopied ? 'Copied Markdown' : 'Copy Markdown'}</span>
+          </button>
+
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Print Report</span>
+          </button>
+
+          <button
+            onClick={loadBlueprint}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Regenerate</span>
+          </button>
+        </div>
       </div>
 
       {/* Real Multi-Format Export Action Center */}
@@ -140,6 +160,7 @@ export const BlueprintView: React.FC<BlueprintViewProps> = ({ projectId }) => {
       {/* Blueprint Navigation Tabs */}
       <div className="flex overflow-x-auto space-x-2 border-b border-slate-200 dark:border-slate-800 pb-2">
         {[
+          { id: 'preview', label: '📖 Live Executive Reader' },
           { id: 'summary', label: '1. Executive & Goals' },
           { id: 'requirements', label: '2. Functional Matrix' },
           { id: 'ui', label: '3. UI & User Journeys' },
@@ -152,7 +173,7 @@ export const BlueprintView: React.FC<BlueprintViewProps> = ({ projectId }) => {
             onClick={() => setActiveTab(tab.id as any)}
             className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
               activeTab === tab.id
-                ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-sm'
+                ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-xs'
                 : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
@@ -162,9 +183,68 @@ export const BlueprintView: React.FC<BlueprintViewProps> = ({ projectId }) => {
       </div>
 
       {/* Tab Panels */}
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-6">
         
-        {/* Tab 1: Executive Summary */}
+        {/* Tab 0: Live Executive Document Reader */}
+        {activeTab === 'preview' && (
+          <div className="max-w-4xl mx-auto space-y-8 py-4">
+            <div className="border-b-2 border-brand-500 pb-4">
+              <span className="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest block mb-1">
+                Engineering Specification Document
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mb-2">
+                {blueprint.title}
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Author: ProjectPilot AI Engine • Status: Approved for Development • Version {blueprint.version}
+              </p>
+            </div>
+
+            {/* Document Content Render */}
+            <div className="space-y-6 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              <section className="space-y-2">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  1. Executive Summary
+                </h3>
+                <p>{data.executive_summary}</p>
+              </section>
+
+              <section className="space-y-2">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  2. Problem Statement
+                </h3>
+                <p>{data.problem_statement}</p>
+              </section>
+
+              <section className="space-y-2">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  3. Key Goals
+                </h3>
+                <ul className="list-disc list-inside space-y-1">
+                  {data.project_goals?.map((g: string, i: number) => (
+                    <li key={i}>{g}</li>
+                  ))}
+                </ul>
+              </section>
+
+              <section className="space-y-2">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  4. User Roles & Personas
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {data.target_users?.map((u: any, i: number) => (
+                    <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
+                      <span className="font-bold text-slate-900 dark:text-white block mb-0.5">{u.role}</span>
+                      <p className="text-[11px] text-slate-500 leading-tight">{u.persona}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 1: Executive Summary & Goals */}
         {activeTab === 'summary' && (
           <div className="space-y-6">
             <div>
@@ -192,7 +272,7 @@ export const BlueprintView: React.FC<BlueprintViewProps> = ({ projectId }) => {
               <ul className="space-y-2">
                 {data.project_goals?.map((g: string, idx: number) => (
                   <li key={idx} className="flex items-start space-x-2 text-xs text-slate-700 dark:text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                     <span>{g}</span>
                   </li>
                 ))}
@@ -332,7 +412,7 @@ export const BlueprintView: React.FC<BlueprintViewProps> = ({ projectId }) => {
               <ul className="space-y-1.5">
                 {data.security_requirements?.map((sec: string, idx: number) => (
                   <li key={idx} className="flex items-center space-x-2 text-xs text-slate-700 dark:text-slate-300">
-                    <Shield className="w-3.5 h-3.5 text-brand-500 flex-shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-brand-500 flex-shrink-0" />
                     <span>{sec}</span>
                   </li>
                 ))}
@@ -352,7 +432,7 @@ export const BlueprintView: React.FC<BlueprintViewProps> = ({ projectId }) => {
                 {data.acceptance_criteria?.map((ac: string, idx: number) => (
                   <div key={idx} className="flex items-center space-x-2 text-xs text-slate-800 dark:text-slate-200">
                     <div className="w-4 h-4 rounded border border-slate-300 dark:border-slate-700 flex items-center justify-center">
-                      <Check className="w-3 h-3 text-slate-400" />
+                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                     </div>
                     <span>{ac}</span>
                   </div>

@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Check, CheckCircle2, ChevronRight, ChevronLeft, 
-  HelpCircle, Lightbulb, AlertTriangle, ArrowRight, 
-  Save, RotateCcw, ListFilter, Sliders, ShieldAlert,
-  Info, Sparkles, Folder, Layers, BookOpen, Smartphone
+  Lightbulb, AlertTriangle, ArrowRight, ArrowLeft,
+  ListFilter, ShieldAlert, Zap, CornerDownRight
 } from 'lucide-react';
 import { QuestionnaireState, Question, Section } from '../types';
 import { api } from '../api';
@@ -12,12 +11,14 @@ interface QuestionnaireViewProps {
   projectId: string;
   onOpenSummaryDrawer: () => void;
   onCompleteToPrioritization: () => void;
+  onShowToast?: (type: 'success' | 'error' | 'info', title: string, message?: string) => void;
 }
 
 export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
   projectId,
   onOpenSummaryDrawer,
-  onCompleteToPrioritization
+  onCompleteToPrioritization,
+  onShowToast
 }) => {
   const [state, setState] = useState<QuestionnaireState | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string>('');
@@ -41,6 +42,7 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
       }
     } catch (err) {
       console.error(err);
+      if (onShowToast) onShowToast('error', 'Failed to load questionnaire');
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +90,7 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
         console.error("Autosave error", err);
         setAutoSaveStatus('idle');
       }
-    }, 450);
+    }, 400);
   };
 
   const handleSkip = async (question: Question) => {
@@ -102,6 +104,7 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
       });
       setState(updated);
       setAutoSaveStatus('saved');
+      if (onShowToast) onShowToast('info', 'Question Skipped', `Skipped ${question.label.slice(0, 30)}...`);
     } catch (err) {
       console.error(err);
       setAutoSaveStatus('idle');
@@ -119,6 +122,37 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
       });
       setState(updated);
       setAutoSaveStatus('saved');
+      if (onShowToast) onShowToast('info', 'Marked Undecided', 'Saved under Unresolved Decisions for review.');
+    } catch (err) {
+      console.error(err);
+      setAutoSaveStatus('idle');
+    }
+  };
+
+  // One-click contradiction resolution
+  const handleAutoResolveConflict = async (conflictId: string) => {
+    setAutoSaveStatus('saving');
+    try {
+      if (conflictId === 'conflict_ai_mismatch') {
+        // Auto resolve by switching ai_integration_level to smart_assistant
+        const updated = await api.autosaveResponse(projectId, {
+          question_key: 'ai_integration_level',
+          value: 'smart_assistant',
+          is_confirmed: true
+        });
+        setState(updated);
+        setAutoSaveStatus('saved');
+        if (onShowToast) onShowToast('success', 'Conflict Resolved', 'Switched AI Integration Level to Smart Assistant.');
+      } else if (conflictId === 'conflict_connectivity') {
+        const updated = await api.autosaveResponse(projectId, {
+          question_key: 'offline_access_need',
+          value: 'local_lan',
+          is_confirmed: true
+        });
+        setState(updated);
+        setAutoSaveStatus('saved');
+        if (onShowToast) onShowToast('success', 'Conflict Resolved', 'Enabled Local LAN offline synchronization.');
+      }
     } catch (err) {
       console.error(err);
       setAutoSaveStatus('idle');
@@ -135,7 +169,26 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
   }
 
   const activeSection = state.sections.find(s => s.id === activeSectionId) || state.sections[0];
+  const activeSectionIdx = state.sections.findIndex(s => s.id === activeSection.id);
   const visibleQuestions = activeSection?.questions.filter(q => q.is_visible) || [];
+
+  const handleNextSection = () => {
+    if (activeSectionIdx < state.sections.length - 1) {
+      setActiveSectionId(state.sections[activeSectionIdx + 1].id);
+      setFocusQuestionIndex(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      onCompleteToPrioritization();
+    }
+  };
+
+  const handlePrevSection = () => {
+    if (activeSectionIdx > 0) {
+      setActiveSectionId(state.sections[activeSectionIdx - 1].id);
+      setFocusQuestionIndex(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -147,6 +200,8 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
             <span className="font-semibold text-slate-800 dark:text-slate-200">{state.project_name}</span>
             <span>•</span>
             <span className="capitalize">{state.mode} Mode</span>
+            <span>•</span>
+            <span className="text-brand-600 dark:text-brand-400 font-bold">Section {activeSectionIdx + 1} of {state.sections.length}</span>
           </div>
           <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
             Adaptive Requirements Questionnaire
@@ -190,25 +245,37 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
         </div>
       </div>
 
-      {/* Contradiction Warning Banner (when rules detect conflicting selections) */}
+      {/* Contradiction Warning Banner with One-Click Auto-Resolve */}
       {state.contradictions.length > 0 && (
-        <div className="mb-6 p-4 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 shadow-sm">
-          <div className="flex items-start space-x-3">
-            <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <h4 className="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wide">
-                Requirement Conflict Detected
-              </h4>
-              {state.contradictions.map((c) => (
-                <div key={c.id} className="text-xs text-amber-800 dark:text-amber-200">
-                  <p className="font-semibold">{c.title}</p>
-                  <p className="opacity-90">{c.description}</p>
-                  <p className="mt-1 font-semibold text-brand-700 dark:text-brand-300">
-                    Suggested Resolution: {c.suggested_resolution}
-                  </p>
-                </div>
-              ))}
+        <div className="mb-6 p-4 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 shadow-sm animate-in fade-in">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start space-x-3">
+              <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wide">
+                  Requirement Conflict Detected
+                </h4>
+                {state.contradictions.map((c) => (
+                  <div key={c.id} className="text-xs text-amber-800 dark:text-amber-200">
+                    <p className="font-semibold">{c.title}</p>
+                    <p className="opacity-90">{c.description}</p>
+                    <p className="mt-1 font-semibold text-brand-700 dark:text-brand-300 flex items-center space-x-1">
+                      <CornerDownRight className="w-3 h-3" />
+                      <span>Suggested Fix: {c.suggested_resolution}</span>
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Quick Auto-Resolve Button */}
+            <button
+              onClick={() => handleAutoResolveConflict(state.contradictions[0].id)}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-sm transition-all flex-shrink-0"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>Auto-Resolve Conflict</span>
+            </button>
           </div>
         </div>
       )}
@@ -218,7 +285,7 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
         
         {/* Left Section Navigation (Column 4) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm sticky top-24">
             
             {/* Overall Completeness Bar */}
             <div className="mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
@@ -228,9 +295,9 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
                   {state.completeness_score}%
                 </span>
               </div>
-              <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+              <div className="w-full h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                 <div 
-                  className="h-full bg-brand-500 rounded-full transition-all duration-500" 
+                  className="h-full bg-gradient-to-r from-brand-600 to-indigo-500 rounded-full transition-all duration-500" 
                   style={{ width: `${state.completeness_score}%` }} 
                 />
               </div>
@@ -242,7 +309,7 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
 
             {/* Section List */}
             <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
-              Questionnaire Sections
+              Sections Roadmap
             </h3>
             <div className="space-y-1.5">
               {state.sections.map((section, idx) => {
@@ -256,7 +323,7 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
                     }}
                     className={`w-full text-left p-3 rounded-xl text-xs font-semibold flex items-center justify-between transition-all ${
                       isActive
-                        ? 'bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 shadow-sm'
+                        ? 'bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 shadow-xs'
                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                     }`}
                   >
@@ -299,9 +366,9 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
         <div className="lg:col-span-8 space-y-6">
           
           {/* Section Header */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
             <span className="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider mb-1 block">
-              Active Section
+              Section {activeSectionIdx + 1} of {state.sections.length}
             </span>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
               {activeSection.title}
@@ -364,6 +431,33 @@ export const QuestionnaireView: React.FC<QuestionnaireViewProps> = ({
                   onUndecided={() => handleMarkUndecided(q)}
                 />
               ))}
+
+              {/* Bottom Section Navigator Buttons */}
+              <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={handlePrevSection}
+                  disabled={activeSectionIdx === 0}
+                  className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition-all"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Previous Section</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleNextSection}
+                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition-all"
+                >
+                  <span>
+                    {activeSectionIdx === state.sections.length - 1
+                      ? 'Proceed to MoSCoW Prioritizer'
+                      : 'Save & Continue to Next Section'}
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
             </div>
           )}
 
@@ -394,7 +488,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   return (
     <div className={`p-6 rounded-2xl bg-white dark:bg-slate-900 border transition-all ${
       question.is_confirmed
-        ? 'border-slate-200 dark:border-slate-800 shadow-sm'
+        ? 'border-slate-200 dark:border-slate-800 shadow-xs'
         : question.is_inferred
         ? 'border-brand-300 dark:border-brand-800 bg-brand-50/20'
         : 'border-slate-200 dark:border-slate-800'
@@ -430,7 +524,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           <button
             type="button"
             onClick={onUndecided}
-            className="text-[11px] text-slate-400 hover:text-amber-600 dark:hover:text-amber-400"
+            className="text-[11px] font-medium text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
             title="Mark as not decided yet"
           >
             Not sure yet
@@ -439,7 +533,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             <button
               type="button"
               onClick={onSkip}
-              className="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              className="text-[11px] font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
               title="Skip this question"
             >
               Skip
@@ -466,7 +560,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                   key={opt.value}
                   className={`p-3 rounded-xl border flex items-start space-x-3 cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-brand-50/80 dark:bg-brand-950/50 border-brand-500 text-brand-900 dark:text-brand-200 shadow-sm'
+                      ? 'bg-brand-50/80 dark:bg-brand-950/50 border-brand-500 text-brand-900 dark:text-brand-200 shadow-xs'
                       : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                   }`}
                 >
@@ -498,7 +592,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                   key={opt.value}
                   className={`p-3 rounded-xl border flex items-start space-x-3 cursor-pointer transition-all ${
                     isChecked
-                      ? 'bg-brand-50/80 dark:bg-brand-950/50 border-brand-500 text-brand-900 dark:text-brand-200 shadow-sm'
+                      ? 'bg-brand-50/80 dark:bg-brand-950/50 border-brand-500 text-brand-900 dark:text-brand-200 shadow-xs'
                       : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                   }`}
                 >

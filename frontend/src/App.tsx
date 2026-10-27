@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
 import { Dashboard } from './components/Dashboard';
 import { IdeaModal } from './components/IdeaModal';
@@ -7,6 +7,7 @@ import { PrioritizationView } from './components/PrioritizationView';
 import { BlueprintView } from './components/BlueprintView';
 import { RequirementsDrawer } from './components/RequirementsDrawer';
 import { AdminView } from './components/AdminView';
+import { ToastContainer, ToastMessage } from './components/Toast';
 import { api } from './api';
 import { Project } from './types';
 
@@ -16,10 +17,25 @@ export function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isIdeaModalOpen, setIsIdeaModalOpen] = useState(false);
   const [isSummaryDrawerOpen, setIsSummaryDrawerOpen] = useState(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     return localStorage.getItem('theme') === 'dark' || 
       (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
+
+  const showToast = useCallback((type: 'success' | 'error' | 'info', title: string, message?: string) => {
+    const newToast: ToastMessage = {
+      id: Math.random().toString(36).substring(2, 9),
+      type,
+      title,
+      message
+    };
+    setToasts((prev) => [...prev, newToast]);
+  }, []);
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   useEffect(() => {
     if (darkMode) {
@@ -35,6 +51,22 @@ export function App() {
     loadProjects();
   }, []);
 
+  // Keyboard navigation shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsIdeaModalOpen(false);
+        setIsSummaryDrawerOpen(false);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        showToast('success', 'Workspace Auto-Saved', 'All your questionnaire answers and priorities are saved.');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showToast]);
+
   const loadProjects = async () => {
     try {
       const data = await api.getProjects();
@@ -47,20 +79,24 @@ export function App() {
   const handleSelectProject = (p: Project) => {
     setSelectedProject(p);
     setCurrentView('questionnaire');
+    showToast('info', `Opened ${p.name}`, 'Resumed adaptive requirements questionnaire.');
   };
 
   const handleProjectCreated = (newProject: Project) => {
     setProjects([newProject, ...projects]);
     setSelectedProject(newProject);
     setCurrentView('questionnaire');
+    showToast('success', 'Project Initialized', `${newProject.name} is ready for planning.`);
   };
 
   const handleDuplicateProject = async (id: string) => {
     try {
       const dup = await api.duplicateProject(id);
       setProjects([dup, ...projects]);
+      showToast('success', 'Project Duplicated', `Created a copy of ${dup.name}`);
     } catch (err) {
       console.error(err);
+      showToast('error', 'Failed to duplicate project');
     }
   };
 
@@ -72,19 +108,22 @@ export function App() {
         setSelectedProject(null);
         setCurrentView('dashboard');
       }
+      showToast('info', 'Project Deleted', 'All data and exports removed.');
     } catch (err) {
       console.error(err);
+      showToast('error', 'Failed to delete project');
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       
-      {/* Top Header Navbar */}
+      {/* Top Header Navbar with Visual Stepper */}
       <Navbar
         currentView={currentView}
         setCurrentView={setCurrentView}
         activeProjectName={selectedProject?.name}
+        completenessScore={selectedProject?.completeness_score}
         onBackToDashboard={() => {
           setSelectedProject(null);
           setCurrentView('dashboard');
@@ -112,6 +151,7 @@ export function App() {
             projectId={selectedProject.id}
             onOpenSummaryDrawer={() => setIsSummaryDrawerOpen(true)}
             onCompleteToPrioritization={() => setCurrentView('prioritization')}
+            onShowToast={showToast}
           />
         )}
 
@@ -119,12 +159,14 @@ export function App() {
           <PrioritizationView
             projectId={selectedProject.id}
             onProceedToBlueprint={() => setCurrentView('blueprint')}
+            onShowToast={showToast}
           />
         )}
 
         {currentView === 'blueprint' && selectedProject && (
           <BlueprintView
             projectId={selectedProject.id}
+            onShowToast={showToast}
           />
         )}
 
@@ -150,6 +192,9 @@ export function App() {
           projectId={selectedProject.id}
         />
       )}
+
+      {/* Toast Notification Container */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 py-6 px-4 text-center text-xs text-slate-400">

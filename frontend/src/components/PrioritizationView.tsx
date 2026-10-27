@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   CheckSquare, Plus, Clock, Users, BarChart3, 
-  Trash2, ArrowRight, Sparkles, Filter, CheckCircle2
+  Trash2, ArrowRight, ArrowLeft, Sparkles, Filter, 
+  CheckCircle2, Flame, Award, Zap
 } from 'lucide-react';
 import { api } from '../api';
 import { Requirement } from '../types';
@@ -9,11 +10,13 @@ import { Requirement } from '../types';
 interface PrioritizationViewProps {
   projectId: string;
   onProceedToBlueprint: () => void;
+  onShowToast?: (type: 'success' | 'error' | 'info', title: string, message?: string) => void;
 }
 
 export const PrioritizationView: React.FC<PrioritizationViewProps> = ({
   projectId,
-  onProceedToBlueprint
+  onProceedToBlueprint,
+  onShowToast
 }) => {
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,6 +27,7 @@ export const PrioritizationView: React.FC<PrioritizationViewProps> = ({
   const [newComplexity, setNewComplexity] = useState<'Low' | 'Medium' | 'High'>('Medium');
   const [newTimeSavings, setNewTimeSavings] = useState('');
   const [newUsersAffected, setNewUsersAffected] = useState('');
+  const [searchFilter, setSearchFilter] = useState('');
 
   useEffect(() => {
     loadRequirements();
@@ -36,8 +40,32 @@ export const PrioritizationView: React.FC<PrioritizationViewProps> = ({
       setRequirements(data);
     } catch (err) {
       console.error(err);
+      if (onShowToast) onShowToast('error', 'Failed to load requirements');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const priorityOrder: Array<'must_have' | 'should_have' | 'could_have' | 'future_consideration'> = [
+    'must_have', 'should_have', 'could_have', 'future_consideration'
+  ];
+
+  const handleShiftPriority = async (req: Requirement, direction: 'left' | 'right') => {
+    const currentIdx = priorityOrder.indexOf(req.moscow_priority);
+    const targetIdx = direction === 'left' ? currentIdx - 1 : currentIdx + 1;
+    if (targetIdx < 0 || targetIdx >= priorityOrder.length) return;
+
+    const newPriority = priorityOrder[targetIdx];
+    try {
+      const updated = await api.updateRequirement(projectId, req.id, {
+        ...req,
+        moscow_priority: newPriority,
+        is_mvp: newPriority === 'must_have'
+      });
+      setRequirements(requirements.map(r => r.id === req.id ? updated : r));
+      if (onShowToast) onShowToast('info', 'Priority Updated', `Moved to ${newPriority.replace('_', ' ').toUpperCase()}`);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -49,6 +77,7 @@ export const PrioritizationView: React.FC<PrioritizationViewProps> = ({
         is_mvp: newP === 'must_have'
       });
       setRequirements(requirements.map(r => r.id === req.id ? updated : r));
+      if (onShowToast) onShowToast('success', 'Priority Updated');
     } catch (err) {
       console.error(err);
     }
@@ -61,6 +90,7 @@ export const PrioritizationView: React.FC<PrioritizationViewProps> = ({
         is_mvp: !req.is_mvp
       });
       setRequirements(requirements.map(r => r.id === req.id ? updated : r));
+      if (onShowToast) onShowToast('success', updated.is_mvp ? 'Added to MVP' : 'Removed from MVP');
     } catch (err) {
       console.error(err);
     }
@@ -70,6 +100,7 @@ export const PrioritizationView: React.FC<PrioritizationViewProps> = ({
     try {
       await api.deleteRequirement(projectId, reqId);
       setRequirements(requirements.filter(r => r.id !== reqId));
+      if (onShowToast) onShowToast('info', 'Requirement Removed');
     } catch (err) {
       console.error(err);
     }
@@ -93,65 +124,116 @@ export const PrioritizationView: React.FC<PrioritizationViewProps> = ({
       setNewTimeSavings('');
       setNewUsersAffected('');
       setIsAddingNew(false);
+      if (onShowToast) onShowToast('success', 'Requirement Added', 'Included in your blueprint plan.');
     } catch (err) {
       console.error(err);
     }
   };
 
+  const filteredReqs = requirements.filter(r => 
+    r.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
+    r.category.toLowerCase().includes(searchFilter.toLowerCase())
+  );
+
   const moscowGroups = {
-    must_have: requirements.filter(r => r.moscow_priority === 'must_have'),
-    should_have: requirements.filter(r => r.moscow_priority === 'should_have'),
-    could_have: requirements.filter(r => r.moscow_priority === 'could_have'),
-    future_consideration: requirements.filter(r => r.moscow_priority === 'future_consideration')
+    must_have: filteredReqs.filter(r => r.moscow_priority === 'must_have'),
+    should_have: filteredReqs.filter(r => r.moscow_priority === 'should_have'),
+    could_have: filteredReqs.filter(r => r.moscow_priority === 'could_have'),
+    future_consideration: filteredReqs.filter(r => r.moscow_priority === 'future_consideration')
   };
 
   const columns = [
-    { key: 'must_have', title: 'Must Have', desc: 'Non-negotiable core scope for MVP delivery', badgeColor: 'bg-emerald-500 text-white' },
-    { key: 'should_have', title: 'Should Have', desc: 'Important capabilities scheduled for v1.1 release', badgeColor: 'bg-brand-500 text-white' },
-    { key: 'could_have', title: 'Could Have', desc: 'Desirable enhancements if time permits', badgeColor: 'bg-amber-500 text-white' },
-    { key: 'future_consideration', title: 'Future Phase', desc: 'Long-term backlog and future roadmap', badgeColor: 'bg-slate-500 text-white' }
+    { key: 'must_have', title: 'Must Have', desc: 'Critical for MVP launch', badgeColor: 'bg-emerald-500 text-white' },
+    { key: 'should_have', title: 'Should Have', desc: 'High impact for v1.1 release', badgeColor: 'bg-brand-500 text-white' },
+    { key: 'could_have', title: 'Could Have', desc: 'Desirable if schedule allows', badgeColor: 'bg-amber-500 text-white' },
+    { key: 'future_consideration', title: 'Future Phase', desc: 'Long-term product backlog', badgeColor: 'bg-slate-500 text-white' }
   ];
+
+  const mvpCount = requirements.filter(r => r.is_mvp).length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
           <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950 text-brand-600 dark:text-brand-300 text-xs font-semibold mb-1">
             <CheckSquare className="w-3.5 h-3.5" />
-            <span>Scope & Delivery Calibrator</span>
+            <span>Step 2 • Scope & Delivery Calibrator</span>
           </div>
           <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">
             MoSCoW Feature Prioritization & MVP Planner
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Determine what ships in the initial MVP versus subsequent iterations. Drag, assign, and quantify time savings.
+            Drag, shift, or promote features between MVP core and future releases with 1 click.
           </p>
         </div>
 
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setIsAddingNew(true)}
-            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold hover:bg-slate-800 dark:hover:bg-white shadow-sm transition-all"
+            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold hover:bg-slate-800 dark:hover:bg-white shadow-xs transition-all"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Add Custom Requirement</span>
+            <span>Add Requirement</span>
           </button>
 
           <button
             onClick={onProceedToBlueprint}
-            className="inline-flex items-center space-x-2 px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition-all"
+            className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition-all"
           >
-            <span>Generate Project Blueprint</span>
+            <span>Generate Blueprint & Exports</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
+      {/* Metrics Summary Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center space-x-3 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+            <Zap className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[11px] text-slate-400 block font-semibold uppercase">Core MVP Scope</span>
+            <span className="text-lg font-extrabold text-slate-900 dark:text-white">
+              {mvpCount} of {requirements.length} Features
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center space-x-3 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[11px] text-slate-400 block font-semibold uppercase">Total Time Savings</span>
+            <span className="text-lg font-extrabold text-slate-900 dark:text-white">
+              ~15 - 20 hrs / week
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center space-x-3 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+            <BarChart3 className="w-5 h-5" />
+          </div>
+          <div className="flex-1">
+            <span className="text-[11px] text-slate-400 block font-semibold uppercase">Search & Filter</span>
+            <input
+              type="text"
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              placeholder="Search requirements..."
+              className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand-500"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Add New Requirement Card Modal / Inline Form */}
       {isAddingNew && (
-        <div className="mb-8 p-6 rounded-2xl bg-white dark:bg-slate-900 border border-brand-300 dark:border-brand-800 shadow-lg space-y-4">
+        <div className="mb-8 p-6 rounded-2xl bg-white dark:bg-slate-900 border border-brand-300 dark:border-brand-800 shadow-lg space-y-4 animate-in fade-in">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Add New Project Requirement
@@ -251,12 +333,12 @@ export const PrioritizationView: React.FC<PrioritizationViewProps> = ({
 
       {/* MoSCoW 4 Columns */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        {columns.map((col) => {
+        {columns.map((col, colIdx) => {
           const items = (moscowGroups as any)[col.key] || [];
           return (
             <div
               key={col.key}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-sm"
+              className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-xs"
             >
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -312,18 +394,26 @@ export const PrioritizationView: React.FC<PrioritizationViewProps> = ({
                         )}
                       </div>
 
-                      {/* Controls: Move priority and MVP Toggle */}
+                      {/* Controls: Quick Shift Arrows, Dropdown, and MVP Toggle */}
                       <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-700/60 text-[11px]">
-                        <select
-                          value={req.moscow_priority}
-                          onChange={(e) => handleUpdatePriority(req, e.target.value)}
-                          className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 dark:text-slate-300"
-                        >
-                          <option value="must_have">Must Have</option>
-                          <option value="should_have">Should Have</option>
-                          <option value="could_have">Could Have</option>
-                          <option value="future_consideration">Future</option>
-                        </select>
+                        <div className="flex items-center space-x-1">
+                          <button
+                            disabled={colIdx === 0}
+                            onClick={() => handleShiftPriority(req, 'left')}
+                            className="p-1 rounded bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-600 dark:text-slate-300 disabled:opacity-20"
+                            title="Promote Priority"
+                          >
+                            <ArrowLeft className="w-2.5 h-2.5" />
+                          </button>
+                          <button
+                            disabled={colIdx === columns.length - 1}
+                            onClick={() => handleShiftPriority(req, 'right')}
+                            className="p-1 rounded bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-600 dark:text-slate-300 disabled:opacity-20"
+                            title="Demote Priority"
+                          >
+                            <ArrowRight className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
 
                         <button
                           onClick={() => handleToggleMvp(req)}
