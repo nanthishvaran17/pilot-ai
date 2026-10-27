@@ -47,3 +47,10 @@ node_modules/
 dist/
 .next/
 out/
+
+# Storage & Exports
+backend/storage/exports/
+backend/storage/uploads/
+*.pdf
+*.docx
+

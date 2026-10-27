@@ -1,122 +1,163 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+import { Navbar } from './components/Navbar';
+import { Dashboard } from './components/Dashboard';
+import { IdeaModal } from './components/IdeaModal';
+import { QuestionnaireView } from './components/QuestionnaireView';
+import { PrioritizationView } from './components/PrioritizationView';
+import { BlueprintView } from './components/BlueprintView';
+import { RequirementsDrawer } from './components/RequirementsDrawer';
+import { AdminView } from './components/AdminView';
+import { api } from './api';
+import { Project } from './types';
 
-function App() {
-  const [count, setCount] = useState(0)
+export function App() {
+  const [currentView, setCurrentView] = useState<'dashboard' | 'questionnaire' | 'prioritization' | 'blueprint' | 'admin'>('dashboard');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isIdeaModalOpen, setIsIdeaModalOpen] = useState(false);
+  const [isSummaryDrawerOpen, setIsSummaryDrawerOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    return localStorage.getItem('theme') === 'dark' || 
+      (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  const loadProjects = async () => {
+    try {
+      const data = await api.getProjects();
+      setProjects(data);
+    } catch (err) {
+      console.error("Failed to load projects", err);
+    }
+  };
+
+  const handleSelectProject = (p: Project) => {
+    setSelectedProject(p);
+    setCurrentView('questionnaire');
+  };
+
+  const handleProjectCreated = (newProject: Project) => {
+    setProjects([newProject, ...projects]);
+    setSelectedProject(newProject);
+    setCurrentView('questionnaire');
+  };
+
+  const handleDuplicateProject = async (id: string) => {
+    try {
+      const dup = await api.duplicateProject(id);
+      setProjects([dup, ...projects]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    try {
+      await api.deleteProject(id);
+      setProjects(projects.filter(p => p.id !== id));
+      if (selectedProject?.id === id) {
+        setSelectedProject(null);
+        setCurrentView('dashboard');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
+      
+      {/* Top Header Navbar */}
+      <Navbar
+        currentView={currentView}
+        setCurrentView={setCurrentView}
+        activeProjectName={selectedProject?.name}
+        onBackToDashboard={() => {
+          setSelectedProject(null);
+          setCurrentView('dashboard');
+          loadProjects();
+        }}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        productName="ProjectPilot AI"
+      />
 
-      <div className="ticks"></div>
+      {/* Main Workspace Body */}
+      <main className="flex-1 pb-16">
+        {currentView === 'dashboard' && (
+          <Dashboard
+            projects={projects}
+            onSelectProject={handleSelectProject}
+            onOpenNewProjectModal={() => setIsIdeaModalOpen(true)}
+            onDuplicateProject={handleDuplicateProject}
+            onDeleteProject={handleDeleteProject}
+          />
+        )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {currentView === 'questionnaire' && selectedProject && (
+          <QuestionnaireView
+            projectId={selectedProject.id}
+            onOpenSummaryDrawer={() => setIsSummaryDrawerOpen(true)}
+            onCompleteToPrioritization={() => setCurrentView('prioritization')}
+          />
+        )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {currentView === 'prioritization' && selectedProject && (
+          <PrioritizationView
+            projectId={selectedProject.id}
+            onProceedToBlueprint={() => setCurrentView('blueprint')}
+          />
+        )}
+
+        {currentView === 'blueprint' && selectedProject && (
+          <BlueprintView
+            projectId={selectedProject.id}
+          />
+        )}
+
+        {currentView === 'admin' && (
+          <AdminView
+            onBackToDashboard={() => setCurrentView('dashboard')}
+          />
+        )}
+      </main>
+
+      {/* Idea Modal (Steps 1 & 2) */}
+      <IdeaModal
+        isOpen={isIdeaModalOpen}
+        onClose={() => setIsIdeaModalOpen(false)}
+        onProjectCreated={handleProjectCreated}
+      />
+
+      {/* Live Requirements Summary Drawer */}
+      {selectedProject && (
+        <RequirementsDrawer
+          isOpen={isSummaryDrawerOpen}
+          onClose={() => setIsSummaryDrawerOpen(false)}
+          projectId={selectedProject.id}
+        />
+      )}
+
+      {/* Footer */}
+      <footer className="border-t border-slate-200 dark:border-slate-800 py-6 px-4 text-center text-xs text-slate-400">
+        <p>ProjectPilot AI — Enterprise Requirements Gathering & Architecture Planning Engine</p>
+      </footer>
+
+    </div>
+  );
 }
 
-export default App
+export default App;
