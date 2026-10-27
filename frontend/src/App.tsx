@@ -7,14 +7,12 @@ import { PrioritizationView } from './components/PrioritizationView';
 import { BlueprintView } from './components/BlueprintView';
 import { RequirementsDrawer } from './components/RequirementsDrawer';
 import { AdminView } from './components/AdminView';
-import { StaffWorkspaceView } from './components/StaffWorkspaceView';
 import { ToastContainer, ToastMessage } from './components/Toast';
 import { api } from './api';
 import { Project } from './types';
 
 export function App() {
-  const [currentView, setCurrentView] = useState<'dashboard' | 'questionnaire' | 'prioritization' | 'blueprint' | 'admin' | 'staff_suite'>('staff_suite');
-
+  const [currentView, setCurrentView] = useState<'dashboard' | 'questionnaire' | 'prioritization' | 'blueprint' | 'admin'>('dashboard');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isIdeaModalOpen, setIsIdeaModalOpen] = useState(false);
@@ -128,19 +126,16 @@ export function App() {
         completenessScore={selectedProject?.completeness_score}
         onBackToDashboard={() => {
           setSelectedProject(null);
-          setCurrentView('staff_suite');
+          setCurrentView('dashboard');
+          loadProjects();
         }}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
-        productName="Nandha Faculty Hub"
+        productName="Pilot AI"
       />
 
       {/* Main Workspace Body */}
       <main className="flex-1 pb-16">
-        {currentView === 'staff_suite' && (
-          <StaffWorkspaceView onShowToast={showToast} />
-        )}
-
         {currentView === 'dashboard' && (
           <Dashboard
             projects={projects}
@@ -203,7 +198,7 @@ export function App() {
 
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 py-6 px-4 text-center text-xs text-slate-400">
-        <p>ProjectPilot AI — Enterprise Requirements Gathering & Architecture Planning Engine</p>
+        <p>Pilot AI — Enterprise Requirements Gathering & Architecture Planning Studio</p>
       </footer>
 
     </div>

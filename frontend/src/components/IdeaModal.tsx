@@ -30,8 +30,8 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
 
   const samplePrompts = [
     {
-      title: "College Academic & Exam Automation",
-      desc: "Nandha college student marks upload panna automated pass percentage calculation, MCQ & 2/10 mark question paper generator, and event certificates with QR verification venum.",
+      title: "Enterprise AI Document & Analytics Hub",
+      desc: "An enterprise platform where teams upload multi-format spreadsheets, perform automated semantic extraction, validate anomalies, and generate production-ready executive reports.",
       icon: BookOpen
     },
     {
